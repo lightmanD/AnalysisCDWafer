@@ -64,7 +64,7 @@ namespace AnalysisCDWafer
             return inputArray.Max()-inputArray.Min();
 
         }
-
+        //full calculating on chip and on waffer
         public void waferCalculation()
         {
             OpenFile();
@@ -181,7 +181,7 @@ namespace AnalysisCDWafer
 
             }
 
-            // расчет по пластине 
+            // wafer calculating
             Console.WriteLine("\n------------------------Wafer-------------------------\n");
             List<List<double>> arrays = new List<List<double>>();
 
