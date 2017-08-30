@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Excel = Microsoft.Office.Interop.Excel;
 
 
 namespace AnalysisCDWafer
@@ -14,9 +15,51 @@ namespace AnalysisCDWafer
         private FileStream file;
         private StreamReader streamReader;
         private string filesDirectories;
+
+        private int rowCounter = 0; //для подсчета строк и дописывания в ексель файл
+
+        Excel.Application excApp;
+        Excel.Worksheet workSheet;
+        Excel.Workbook workBook;
+
+
+
         public FileAnalyiser(string filesDirectories)
         {
             this.filesDirectories = filesDirectories;
+
+
+
+        }
+
+        public void ExcelFileCreator()
+        {
+
+            this.excApp = new Excel.Application();
+            excApp.Visible = true;
+            this.workBook = this.excApp.Workbooks.Add();
+            this.workSheet = this.workBook.Worksheets[1];
+
+
+            excApp.ActiveWorkbook.SaveAs(@"Book1.xls");
+
+        }//нерабочий
+
+        public void ExcelFileOpener()
+        {
+            string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\result.xlsx";
+            this.excApp = new Excel.Application();
+            this.workBook = excApp.Workbooks.Open(path);
+            this.workSheet = workBook.ActiveSheet;
+            // this.workSheet.Cells[1, "A"] = "privet";
+        }
+
+
+        public void ExcelSaver()
+        {
+            string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\result1.xls";
+
+            this.workBook.SaveAs(path, Excel.XlSaveAsAccessMode.xlNoChange);
 
         }
 
@@ -34,10 +77,18 @@ namespace AnalysisCDWafer
         public void writeTenLine()
         {
             OpenFile();
+            string temp = "";
             for (int i = 0; i < 11; i++)
-                Console.WriteLine(streamReader.ReadLine());
+            {
+                temp = streamReader.ReadLine();
+                this.workSheet.Cells[i + 1, 1] = temp;
+                this.rowCounter++;
+                Console.WriteLine(temp);
+            }
+
             CloseFile();
         }
+
         //СРЕДНЕЕ
         public double Mean(List<double> inputArray)
         {
@@ -59,9 +110,9 @@ namespace AnalysisCDWafer
             return sigma;
         }
         //размах
-        public double Sweap(List <double> inputArray)
+        public double Sweap(List<double> inputArray)
         {
-            return inputArray.Max()-inputArray.Min();
+            return inputArray.Max() - inputArray.Min();
 
         }
         //full calculating on chip and on waffer
@@ -114,6 +165,19 @@ namespace AnalysisCDWafer
 
             Console.WriteLine("no_of_mp = {0}\nno_of_sequence = {1}\nno_of_chip = {2}", no_of_mp, no_of_sequence, no_of_chip);
 
+            rowCounter++;
+            this.workSheet.Cells[rowCounter, 1] = "no_of_chip";
+            this.workSheet.Cells[rowCounter, 2] =  no_of_chip;
+
+            rowCounter++;
+            this.workSheet.Cells[rowCounter, 1] = "no_of_sequence";
+            this.workSheet.Cells[rowCounter, 2] = no_of_sequence;
+
+            rowCounter++;
+            this.workSheet.Cells[rowCounter, 1] = "no_of_mp";
+            this.workSheet.Cells[rowCounter, 2] = no_of_mp;
+
+            
             //отсеивание всех стредних штрих
             while ((line = streamReader.ReadLine()) != null)
             {
@@ -159,7 +223,7 @@ namespace AnalysisCDWafer
                     Console.WriteLine("Group #" + k);
                     tempArrayChip[i].Add(new List<double>());
 
-                    for (int j = k+i*no_of_mp; j < i * no_of_mp + no_of_mp; j += group_number)
+                    for (int j = k + i * no_of_mp; j < i * no_of_mp + no_of_mp; j += group_number)
                     {
                         tempArrayChip[i][k].Add(meansArray[j]);
                     }
@@ -175,15 +239,20 @@ namespace AnalysisCDWafer
                     Console.Write("\nSigma = {0} ", tempSigma);
                     Console.Write("\nSweap = {0} ", tempSweap);
 
+                    ExcelChipWriter(i, k, tempArrayChip[i][k], tempMean, tempSigma, tempSweap);
+
                     Console.WriteLine("\n");
                 }
-               
+
 
             }
 
             // wafer calculating
             Console.WriteLine("\n------------------------Wafer-------------------------\n");
             List<List<double>> arrays = new List<List<double>>();
+
+            rowCounter++;
+            this.workSheet.Cells[ ++this.rowCounter, 1] = "Statistic on wafer";
 
             for (int i = 0; i < group_number; i++)
             {
@@ -203,11 +272,67 @@ namespace AnalysisCDWafer
                 Console.Write("\nSigma = {0}", tempSigma);
                 Console.Write("\nSweap = {0}\n ", tempSweap);
 
+                ExcelWaferWriter(i, arrays[i], tempMean, tempSigma, tempSweap);
+
             }
 
 
+        }
+
+        private void ExcelChipWriter(int ChipNumber, int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
+        {
+            rowCounter++;
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "ChipNumber";
+            this.workSheet.Cells[this.rowCounter, 2] = ChipNumber;
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
+            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber;
 
 
+            int colomnCounter = 2;
+            this.rowCounter++;
+            foreach (var elem in inputList)
+            {
+                this.workSheet.Cells[this.rowCounter,colomnCounter++] = elem;
+            }
+
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "Mean";
+            this.workSheet.Cells[this.rowCounter, 2] = Mean;
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "Sigma";
+            this.workSheet.Cells[this.rowCounter, 2] = Sigma;
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "Sweap";
+            this.workSheet.Cells[this.rowCounter, 2] = Sweap;
+
+
+        }
+
+        private void ExcelWaferWriter(int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
+        {
+
+            rowCounter++;
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
+            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber;
+            
+            int colomnCounter = 2;
+            this.rowCounter++;
+            foreach (var elem in inputList)
+            {
+                this.workSheet.Cells[this.rowCounter, colomnCounter++] = elem;
+            }
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "Mean";
+            this.workSheet.Cells[this.rowCounter, 2] = Mean;
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "Sigma";
+            this.workSheet.Cells[this.rowCounter, 2] = Sigma;
+            rowCounter++;
+            this.workSheet.Cells[this.rowCounter, 1] = "Sweap";
+            this.workSheet.Cells[this.rowCounter, 2] = Sweap;
         }
 
     }

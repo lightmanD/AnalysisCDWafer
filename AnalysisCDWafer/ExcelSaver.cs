@@ -3,24 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Office.Interop.Excel;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace AnalysisCDWafer
 {
     class ExcelSaver
     {
-        private Application ObjExcel;
-        ExcelSaver()
+        
+
+
+        static void ExcelFileCreator()
         {
-            ExcelFileCreator();
+            var excelApp = new Excel.Application();
+            excelApp.Visible = true;
+            excelApp.Workbooks.Add();
+            Excel._Worksheet workSheet = (Excel.Worksheet)excelApp.ActiveSheet;
+            
         }
 
-        void ExcelFileCreator()
-        {
-            ObjExcel = new Application();
-            Workbook ObjWorkBook;
-            Worksheet ObjWorkSheet;
-        }
-
-    }
 }
+}
+
+    
+

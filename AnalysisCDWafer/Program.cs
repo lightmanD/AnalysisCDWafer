@@ -37,12 +37,17 @@ namespace AnalysisCDWafer
 
                 FileAnalyiser fileAnalyiser = new FileAnalyiser(filesDirectories[fileNumber]);
 
+                fileAnalyiser.ExcelFileOpener();
+
                 fileAnalyiser.writeTenLine();
 
                 fileAnalyiser.waferCalculation();
+
+                fileAnalyiser.ExcelSaver();
                 //testing
 
-
+                //fileAnalyiser.ExcelFileCreator();
+                
 
 
                 //testing
