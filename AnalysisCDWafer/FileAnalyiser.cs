@@ -57,7 +57,11 @@ namespace AnalysisCDWafer
 
         public void ExcelSaver()
         {
-            string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\result1.xls";
+            DateTime dt = DateTime.Now;
+            string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\";
+
+            path += dt.Day+"."+dt.Month+ "." + dt.Year+ "." +dt.Hour+ "." +dt.Minute+ "." +dt.Second ;
+            path += ".xls";
 
             this.workBook.SaveAs(path, Excel.XlSaveAsAccessMode.xlNoChange);
 
@@ -284,10 +288,10 @@ namespace AnalysisCDWafer
             rowCounter++;
             rowCounter++;
             this.workSheet.Cells[this.rowCounter, 1] = "ChipNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = ChipNumber;
+            this.workSheet.Cells[this.rowCounter, 2] = ChipNumber+1;
             rowCounter++;
             this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber;
+            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber+1;
 
 
             int colomnCounter = 2;
@@ -316,7 +320,7 @@ namespace AnalysisCDWafer
             rowCounter++;
             rowCounter++;
             this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber;
+            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber+1;
             
             int colomnCounter = 2;
             this.rowCounter++;
