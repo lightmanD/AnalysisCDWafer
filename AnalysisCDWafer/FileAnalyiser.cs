@@ -78,6 +78,7 @@ namespace AnalysisCDWafer
             streamReader.Close();
             file.Close();
         }
+
         public void writeTenLine()
         {
             OpenFile();
@@ -214,6 +215,42 @@ namespace AnalysisCDWafer
             }
 
             // расчет по чипу
+            calculationOnChip(no_of_mp, no_of_sequence, no_of_chip, group_number ,meansArray);
+
+            // wafer calculating
+            Console.WriteLine("\n------------------------Wafer-------------------------\n");
+            List<List<double>> arrays = new List<List<double>>();
+
+            rowCounter++;
+            this.workSheet.Cells[ ++this.rowCounter, 1] = "Statistic on wafer";
+
+            for (int i = 0; i < group_number; i++)
+            {
+                arrays.Add(new List<double>());
+
+                for (int j = i; j < no_of_sequence; j += group_number)
+                {
+                    arrays[i].Add(meansArray[j]);
+
+                }
+                var tempMean = Mean(arrays[i]);
+                var tempSigma = Sigma(arrays[i]);
+                var tempSweap = Sweap(arrays[i]);
+
+                Console.Write("\nGroup #" + i);
+                Console.Write("\nMean = {0}", tempMean);
+                Console.Write("\nSigma = {0}", tempSigma);
+                Console.Write("\nSweap = {0}\n ", tempSweap);
+
+                ExcelWaferWriter(i, arrays[i], tempMean, tempSigma, tempSweap);
+
+            }
+
+
+        }
+
+        private void calculationOnChip(int no_of_mp, int no_of_sequence, int no_of_chip,int group_number, List<double> meansArray)
+        {
             Console.WriteLine("\n------------------------Chips-------------------------\n");
 
             List<List<List<double>>> tempArrayChip = new List<List<List<double>>>();
@@ -247,39 +284,7 @@ namespace AnalysisCDWafer
 
                     Console.WriteLine("\n");
                 }
-
-
             }
-
-            // wafer calculating
-            Console.WriteLine("\n------------------------Wafer-------------------------\n");
-            List<List<double>> arrays = new List<List<double>>();
-
-            rowCounter++;
-            this.workSheet.Cells[ ++this.rowCounter, 1] = "Statistic on wafer";
-
-            for (int i = 0; i < group_number; i++)
-            {
-                arrays.Add(new List<double>());
-
-                for (int j = i; j < no_of_sequence; j += group_number)
-                {
-                    arrays[i].Add(meansArray[j]);
-
-                }
-                var tempMean = Mean(arrays[i]);
-                var tempSigma = Sigma(arrays[i]);
-                var tempSweap = Sweap(arrays[i]);
-
-                Console.Write("\nGroup #" + i);
-                Console.Write("\nMean = {0}", tempMean);
-                Console.Write("\nSigma = {0}", tempSigma);
-                Console.Write("\nSweap = {0}\n ", tempSweap);
-
-                ExcelWaferWriter(i, arrays[i], tempMean, tempSigma, tempSweap);
-
-            }
-
 
         }
 
