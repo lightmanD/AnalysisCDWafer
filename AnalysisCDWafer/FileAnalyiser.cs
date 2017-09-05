@@ -10,7 +10,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace AnalysisCDWafer
 {
-    class FileAnalyiser
+     public class FileAnalyiser
     {
         private FileStream file;
         private StreamReader streamReader;
@@ -27,8 +27,6 @@ namespace AnalysisCDWafer
         public FileAnalyiser(string filesDirectories)
         {
             this.filesDirectories = filesDirectories;
-
-
 
         }
 
@@ -54,13 +52,12 @@ namespace AnalysisCDWafer
             // this.workSheet.Cells[1, "A"] = "privet";
         }
 
-
         public void ExcelSaver()
         {
             DateTime dt = DateTime.Now;
             string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\";
 
-            path += dt.Day+"."+dt.Month+ "." + dt.Year+ "." +dt.Hour+ "." +dt.Minute+ "." +dt.Second ;
+            path += dt.Day + "." + dt.Month + "." + dt.Year + "." + dt.Hour + "." + dt.Minute + "." + dt.Second;
             path += ".xls";
 
             this.workBook.SaveAs(path, Excel.XlSaveAsAccessMode.xlNoChange);
@@ -79,7 +76,7 @@ namespace AnalysisCDWafer
             file.Close();
         }
 
-        public void writeTenLine()
+        public void WriteTenLine()
         {
             OpenFile();
             string temp = "";
@@ -111,17 +108,17 @@ namespace AnalysisCDWafer
                 sigma += Math.Pow(elem - mean, 2);
             }
 
-            sigma = Math.Pow(sigma, 0.5) / (inputArray.Capacity - 1);
+            sigma = Math.Pow(sigma /(inputArray.Count - 1), 0.5);
             return sigma;
         }
         //размах
-        public double Sweap(List<double> inputArray)
+        public double Range(List<double> inputArray)
         {
             return inputArray.Max() - inputArray.Min();
 
         }
-        //full calculating on chip and on waffer
-        public void waferCalculation()
+        // calculating  on waffer
+        public void WaferCalculation()
         {
             OpenFile();
             Console.WriteLine("Start calculating...");
@@ -172,7 +169,7 @@ namespace AnalysisCDWafer
 
             rowCounter++;
             this.workSheet.Cells[rowCounter, 1] = "no_of_chip";
-            this.workSheet.Cells[rowCounter, 2] =  no_of_chip;
+            this.workSheet.Cells[rowCounter, 2] = no_of_chip;
 
             rowCounter++;
             this.workSheet.Cells[rowCounter, 1] = "no_of_sequence";
@@ -182,7 +179,7 @@ namespace AnalysisCDWafer
             this.workSheet.Cells[rowCounter, 1] = "no_of_mp";
             this.workSheet.Cells[rowCounter, 2] = no_of_mp;
 
-            
+
             //отсеивание всех стредних штрих
             while ((line = streamReader.ReadLine()) != null)
             {
@@ -215,14 +212,14 @@ namespace AnalysisCDWafer
             }
 
             // расчет по чипу
-            calculationOnChip(no_of_mp, no_of_sequence, no_of_chip, group_number ,meansArray);
+            CalculationOnChip(no_of_mp, no_of_sequence, no_of_chip, group_number, meansArray);
 
             // wafer calculating
             Console.WriteLine("\n------------------------Wafer-------------------------\n");
             List<List<double>> arrays = new List<List<double>>();
 
             rowCounter++;
-            this.workSheet.Cells[ ++this.rowCounter, 1] = "Statistic on wafer";
+            this.workSheet.Cells[++this.rowCounter, 1] = "Statistic on wafer";
 
             for (int i = 0; i < group_number; i++)
             {
@@ -235,7 +232,7 @@ namespace AnalysisCDWafer
                 }
                 var tempMean = Mean(arrays[i]);
                 var tempSigma = Sigma(arrays[i]);
-                var tempSweap = Sweap(arrays[i]);
+                var tempSweap = Range(arrays[i]);
 
                 Console.Write("\nGroup #" + i);
                 Console.Write("\nMean = {0}", tempMean);
@@ -249,7 +246,7 @@ namespace AnalysisCDWafer
 
         }
 
-        private void calculationOnChip(int no_of_mp, int no_of_sequence, int no_of_chip,int group_number, List<double> meansArray)
+        private void CalculationOnChip(int no_of_mp, int no_of_sequence, int no_of_chip, int group_number, List<double> meansArray)
         {
             Console.WriteLine("\n------------------------Chips-------------------------\n");
 
@@ -274,7 +271,7 @@ namespace AnalysisCDWafer
 
                     var tempMean = Mean(tempArrayChip[i][k]);
                     var tempSigma = Sigma(tempArrayChip[i][k]);
-                    var tempSweap = Sweap(tempArrayChip[i][k]);
+                    var tempSweap = Range(tempArrayChip[i][k]);
 
                     Console.Write("\nMean = {0} ", tempMean);
                     Console.Write("\nSigma = {0} ", tempSigma);
@@ -293,17 +290,17 @@ namespace AnalysisCDWafer
             rowCounter++;
             rowCounter++;
             this.workSheet.Cells[this.rowCounter, 1] = "ChipNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = ChipNumber+1;
+            this.workSheet.Cells[this.rowCounter, 2] = ChipNumber + 1;
             rowCounter++;
             this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber+1;
+            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber + 1;
 
 
             int colomnCounter = 2;
             this.rowCounter++;
             foreach (var elem in inputList)
             {
-                this.workSheet.Cells[this.rowCounter,colomnCounter++] = elem;
+                this.workSheet.Cells[this.rowCounter, colomnCounter++] = elem;
             }
 
             rowCounter++;
@@ -325,8 +322,8 @@ namespace AnalysisCDWafer
             rowCounter++;
             rowCounter++;
             this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber+1;
-            
+            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber + 1;
+
             int colomnCounter = 2;
             this.rowCounter++;
             foreach (var elem in inputList)

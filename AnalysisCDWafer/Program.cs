@@ -39,15 +39,13 @@ namespace AnalysisCDWafer
 
                 fileAnalyiser.ExcelFileOpener();
 
-                fileAnalyiser.writeTenLine();
+                fileAnalyiser.WriteTenLine();
 
-                fileAnalyiser.waferCalculation();
+                fileAnalyiser.WaferCalculation();
 
                 fileAnalyiser.ExcelSaver();
                 //testing
 
-                //fileAnalyiser.ExcelFileCreator();
-                
 
 
                 //testing
