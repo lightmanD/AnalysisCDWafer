@@ -41,9 +41,14 @@ namespace AnalysisCDWafer
 
                 fileAnalyiser.WriteTenLine();
 
-                fileAnalyiser.WaferCalculation();
+                fileAnalyiser.CollectionOfSourceData();
+                // расчет по чипу
 
-                fileAnalyiser.ExcelSaver();
+                fileAnalyiser.CalculatingOnWafer();
+                //fileAnalyiser.CalculationOnChip();
+
+
+                //fileAnalyiser.ExcelSaver();
                 //testing
 
 

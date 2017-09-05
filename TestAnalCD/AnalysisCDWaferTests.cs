@@ -6,7 +6,7 @@ using System.Collections;
 namespace AnalysisCDWafer.Tests
 {
     [TestClass]
-    public class AnalysisCDWaferTests
+    public class TestRangeMeanSigma
     {
         [TestMethod]
         public void TestM_Mean_Regular()
@@ -38,7 +38,7 @@ namespace AnalysisCDWafer.Tests
             string path = "files/20170821_162000_ABB-PRODUCT-C5L5IDV_E720002_ABB-L.msr";
             FileAnalyiser fileAnaliser = new FileAnalyiser(path);
             List<double> list = new List<double>();
-            for (int i=0;i<Int16.MaxValue ;i++)
+            for (int i = 0; i < Int16.MaxValue; i++)
             {
                 list.Add(0);
             }
@@ -174,4 +174,10 @@ namespace AnalysisCDWafer.Tests
         }
 
     }
+
+    [TestClass]
+    public class TestCalculating
+    {
+    }
+
 }

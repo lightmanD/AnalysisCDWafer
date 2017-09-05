@@ -10,18 +10,19 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace AnalysisCDWafer
 {
-     public class FileAnalyiser
+    public class FileAnalyiser
     {
         private FileStream file;
         private StreamReader streamReader;
         private string filesDirectories;
 
         private int rowCounter = 0; //для подсчета строк и дописывания в ексель файл
+        private Dictionary<string, int> sourseDataDictionary = new Dictionary<string, int>();
+        List<double> meansArray = new List<double>();
 
         Excel.Application excApp;
         Excel.Worksheet workSheet;
         Excel.Workbook workBook;
-
 
 
         public FileAnalyiser(string filesDirectories)
@@ -108,7 +109,7 @@ namespace AnalysisCDWafer
                 sigma += Math.Pow(elem - mean, 2);
             }
 
-            sigma = Math.Pow(sigma /(inputArray.Count - 1), 0.5);
+            sigma = Math.Pow(sigma / (inputArray.Count - 1), 0.5);
             return sigma;
         }
         //размах
@@ -118,16 +119,32 @@ namespace AnalysisCDWafer
 
         }
         // calculating  on waffer
-        public void WaferCalculation()
+       
+        public void CollectionOfSourceData()
         {
             OpenFile();
-            Console.WriteLine("Start calculating...");
+            Console.WriteLine("Data assembling...");
 
-
-            List<double> meansArray = new List<double>();
             int no_of_mp = 0;
             int no_of_sequence = 0;
             int no_of_chip = 0;
+            int group_number = 0;
+
+            //ввод колличества групп
+            while (true)
+            {
+                Console.WriteLine("Input number of point's group: ");
+                var fileNumberRead = Console.ReadLine();
+                Int32.TryParse(fileNumberRead, out group_number);
+
+                if (no_of_mp % group_number == 0)
+                {
+                    this.sourseDataDictionary["group_number"] = group_number;
+                    break;
+                }
+
+                else Console.WriteLine("The number of groups is not a multiple of the number of mp");
+            }
 
             string line;
             //нахождение исходных данных
@@ -139,7 +156,7 @@ namespace AnalysisCDWafer
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
                     no_of_mp = Convert.ToInt32(substring[1]);
-                    //Console.WriteLine(line);
+                    this.sourseDataDictionary.Add("no_of_mp", no_of_mp);
                     break;
                 }
 
@@ -149,7 +166,8 @@ namespace AnalysisCDWafer
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
                     no_of_sequence = Convert.ToInt32(substring[1]);
-                    //Console.WriteLine(line);
+                    this.sourseDataDictionary.Add("no_of_sequence", no_of_sequence);
+
 
                 }
 
@@ -159,7 +177,8 @@ namespace AnalysisCDWafer
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
                     no_of_chip = Convert.ToInt32(substring[1]);
-                    //Console.WriteLine(line);
+                    this.sourseDataDictionary.Add("no_of_chip", no_of_chip);
+
 
                 }
 
@@ -167,18 +186,10 @@ namespace AnalysisCDWafer
 
             Console.WriteLine("no_of_mp = {0}\nno_of_sequence = {1}\nno_of_chip = {2}", no_of_mp, no_of_sequence, no_of_chip);
 
-            rowCounter++;
-            this.workSheet.Cells[rowCounter, 1] = "no_of_chip";
-            this.workSheet.Cells[rowCounter, 2] = no_of_chip;
-
-            rowCounter++;
-            this.workSheet.Cells[rowCounter, 1] = "no_of_sequence";
-            this.workSheet.Cells[rowCounter, 2] = no_of_sequence;
-
-            rowCounter++;
-            this.workSheet.Cells[rowCounter, 1] = "no_of_mp";
-            this.workSheet.Cells[rowCounter, 2] = no_of_mp;
-
+            foreach (var elem in sourseDataDictionary)
+            {
+                Console.WriteLine(elem);
+            }
 
             //отсеивание всех стредних штрих
             while ((line = streamReader.ReadLine()) != null)
@@ -192,7 +203,7 @@ namespace AnalysisCDWafer
 
                     Char delimetr = ':';
                     string[] substring = line.Split(delimetr);
-                    meansArray.Add(Convert.ToDouble(substring[2]));
+                    this.meansArray.Add(Convert.ToDouble(substring[2]));
 
                 }
 
@@ -200,34 +211,21 @@ namespace AnalysisCDWafer
 
             CloseFile();
 
-            int group_number = 2;
-            while (true)
-            {
-                Console.WriteLine("Input number of point's group: ");
-                var fileNumberRead = Console.ReadLine();
-                Int32.TryParse(fileNumberRead, out group_number);
+        }
 
-                if (no_of_mp % group_number == 0) break;
-                else Console.WriteLine("The number of groups is not a multiple of the number of mp");
-            }
-
-            // расчет по чипу
-            CalculationOnChip(no_of_mp, no_of_sequence, no_of_chip, group_number, meansArray);
-
-            // wafer calculating
+        public void CalculatingOnWafer()
+        {
             Console.WriteLine("\n------------------------Wafer-------------------------\n");
             List<List<double>> arrays = new List<List<double>>();
 
-            rowCounter++;
-            this.workSheet.Cells[++this.rowCounter, 1] = "Statistic on wafer";
-
-            for (int i = 0; i < group_number; i++)
+            for (int i = 0; i < this.sourseDataDictionary["group_number"]; i++)
             {
                 arrays.Add(new List<double>());
 
-                for (int j = i; j < no_of_sequence; j += group_number)
+                for (int j = i; j < this.sourseDataDictionary["no_of_sequence"];
+                    j += this.sourseDataDictionary["group_number"])
                 {
-                    arrays[i].Add(meansArray[j]);
+                    arrays[i].Add(this.meansArray[j]);
 
                 }
                 var tempMean = Mean(arrays[i]);
@@ -239,31 +237,31 @@ namespace AnalysisCDWafer
                 Console.Write("\nSigma = {0}", tempSigma);
                 Console.Write("\nSweap = {0}\n ", tempSweap);
 
-                ExcelWaferWriter(i, arrays[i], tempMean, tempSigma, tempSweap);
-
+                //ExcelWaferWriter(i, arrays[i], tempMean, tempSigma, tempSweap);
             }
-
-
         }
 
-        private void CalculationOnChip(int no_of_mp, int no_of_sequence, int no_of_chip, int group_number, List<double> meansArray)
+        public void CalculationOnChip()
         {
             Console.WriteLine("\n------------------------Chips-------------------------\n");
 
             List<List<List<double>>> tempArrayChip = new List<List<List<double>>>();
-            for (int i = 0; i < no_of_chip; i++)
+
+            for (int i = 0; i < this.sourseDataDictionary["no_of_chip"]; i++)
             {
                 Console.WriteLine("Chip #" + i);
                 tempArrayChip.Add(new List<List<double>>());
 
-                for (int k = 0; k < group_number; k++)
+                for (int k = 0; k < this.sourseDataDictionary["group_number"]; k++)
                 {
                     Console.WriteLine("Group #" + k);
                     tempArrayChip[i].Add(new List<double>());
 
-                    for (int j = k + i * no_of_mp; j < i * no_of_mp + no_of_mp; j += group_number)
+                    for (int j = k + i * this.sourseDataDictionary["no_of_mp"];
+                        j < i * this.sourseDataDictionary["no_of_mp"] +
+                        this.sourseDataDictionary["no_of_mp"]; j += this.sourseDataDictionary["group_number"])
                     {
-                        tempArrayChip[i][k].Add(meansArray[j]);
+                        tempArrayChip[i][k].Add(this.meansArray[j]);
                     }
 
                     foreach (var elem in tempArrayChip[i][k])
@@ -277,7 +275,7 @@ namespace AnalysisCDWafer
                     Console.Write("\nSigma = {0} ", tempSigma);
                     Console.Write("\nSweap = {0} ", tempSweap);
 
-                    ExcelChipWriter(i, k, tempArrayChip[i][k], tempMean, tempSigma, tempSweap);
+                    //ExcelChipWriter(i, k, tempArrayChip[i][k], tempMean, tempSigma, tempSweap);
 
                     Console.WriteLine("\n");
                 }
