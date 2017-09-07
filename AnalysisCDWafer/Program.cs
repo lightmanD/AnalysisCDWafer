@@ -43,11 +43,13 @@ namespace AnalysisCDWafer
 
                 fileAnalyiser.CollectionOfSourceData();
                 
-                fileAnalyiser.CalculatingOnWafer();
+               var resultWafer = fileAnalyiser.CalculatingOnWafer();
 
                 fileAnalyiser.CalculationOnChip();
 
                 fileAnalyiser.ExcelSaveHeader();
+
+                fileAnalyiser.ExcelWaferSaver(resultWafer);
 
                 fileAnalyiser.ExcelSaver();
 

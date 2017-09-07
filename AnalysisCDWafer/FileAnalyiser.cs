@@ -368,8 +368,8 @@ namespace AnalysisCDWafer
                 //string[] substring = tmp.Split(delimetr);
 
                 this.workSheet.Cells[i, 1] = elem;
-                               
-                
+
+
                 //fieldName = listValues[0];
                 //fieldValue = listValues[1];
 
@@ -378,8 +378,46 @@ namespace AnalysisCDWafer
 
                 i++;
             }
+
+            i++;
+
+            foreach (var elem in this.sourseDataDic)
+            {
+                this.workSheet.Cells[i, 1] = elem.ToString();
+                i++;
+            }
         }
 
+        public void ExcelWaferSaver(List<List<double>> inputList)
+        {
+            this.workSheet.Cells[19, 2] = "Mean";
+            this.workSheet.Cells[20, 2] = "Sigma";
+            this.workSheet.Cells[21, 2] = "Range";
 
+            this.workSheet.Cells[23, 2] = "All values";
+
+            var groupNum = 3;
+            foreach (var group in inputList)
+            {
+
+                var mean = Mean(group);
+                var sigma = Sigma(group);
+                var range = Range(group);
+
+                this.workSheet.Cells[18, groupNum] = groupNum;
+                this.workSheet.Cells[19, groupNum] = Mean(group);
+                this.workSheet.Cells[20, groupNum] = Sigma(group);
+                this.workSheet.Cells[21, groupNum] = Range(group);
+
+
+                var rowCounter = 23;
+                foreach (var elem in group)
+                {
+                    this.workSheet.Cells[rowCounter, groupNum] = elem;
+                    rowCounter++;
+                }
+                groupNum++;
+            }
+        }
     }
 }
