@@ -12,13 +12,13 @@ namespace AnalysisCDWafer
 {
     public class FileAnalyiser
     {
-        private FileStream file;
-        private StreamReader streamReader;
-        private string filesDirectories;
+        private FileStream _file;
+        private StreamReader _streamReader;
+        private string _filesDirectories;
 
-        private int rowCounter = 0; //для подсчета строк и дописывания в ексель файл
-        private Dictionary<string, int> sourseDataDictionary = new Dictionary<string, int>();
-        List<double> meansArray = new List<double>();
+        private int rowCounter = 0; //для подсчета строк и дописывания в Excel файл
+        private Dictionary<string, int> sourseDataDic = new Dictionary<string, int>(); // для исходных данных
+        private List<double> meansArray = new List<double>();
 
         Excel.Application excApp;
         Excel.Worksheet workSheet;
@@ -27,7 +27,7 @@ namespace AnalysisCDWafer
 
         public FileAnalyiser(string filesDirectories)
         {
-            this.filesDirectories = filesDirectories;
+            this._filesDirectories = filesDirectories;
 
         }
 
@@ -67,37 +67,38 @@ namespace AnalysisCDWafer
 
         private void OpenFile()
         {
-            this.file = new FileStream(filesDirectories, FileMode.Open, FileAccess.Read);
-            this.streamReader = new StreamReader(file);
+            this._file = new FileStream(_filesDirectories, FileMode.Open, FileAccess.Read);
+            this._streamReader = new StreamReader(_file);
         }
 
         private void CloseFile()
         {
-            streamReader.Close();
-            file.Close();
+            _streamReader.Close();
+            _file.Close();
         }
 
-        public void WriteTenLine()
+        public List<string> ReadHeader()
         {
+            List<string> headerList = new List<string>();
             OpenFile();
             string temp = "";
             for (int i = 0; i < 11; i++)
             {
-                temp = streamReader.ReadLine();
-                this.workSheet.Cells[i + 1, 1] = temp;
-                this.rowCounter++;
+                temp = _streamReader.ReadLine();
+                headerList.Add(temp);
                 Console.WriteLine(temp);
             }
 
             CloseFile();
+
+            return headerList;
         }
 
-        //СРЕДНЕЕ
         public double Mean(List<double> inputArray)
         {
             return inputArray.Average();
         }
-        // СИГМА
+
         public double Sigma(List<double> inputArray)
         {
             double sigma = 0;
@@ -112,22 +113,23 @@ namespace AnalysisCDWafer
             sigma = Math.Pow(sigma / (inputArray.Count - 1), 0.5);
             return sigma;
         }
-        //размах
+
         public double Range(List<double> inputArray)
         {
             return inputArray.Max() - inputArray.Min();
 
         }
-        // calculating  on waffer
-       
+
         public void CollectionOfSourceData()
         {
             OpenFile();
+
             Console.WriteLine("Data assembling...");
 
             int no_of_mp = 0;
             int no_of_sequence = 0;
             int no_of_chip = 0;
+            int slot_no = 0;
             int group_number = 0;
 
             //ввод колличества групп
@@ -139,7 +141,7 @@ namespace AnalysisCDWafer
 
                 if (no_of_mp % group_number == 0)
                 {
-                    this.sourseDataDictionary["group_number"] = group_number;
+                    this.sourseDataDic["group_number"] = group_number;
                     break;
                 }
 
@@ -148,7 +150,7 @@ namespace AnalysisCDWafer
 
             string line;
             //нахождение исходных данных
-            while ((line = streamReader.ReadLine()) != null)
+            while ((line = _streamReader.ReadLine()) != null)
             {
                 if (line.Contains("no_of_mp"))
                 {
@@ -156,7 +158,7 @@ namespace AnalysisCDWafer
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
                     no_of_mp = Convert.ToInt32(substring[1]);
-                    this.sourseDataDictionary.Add("no_of_mp", no_of_mp);
+                    this.sourseDataDic.Add("no_of_mp", no_of_mp);
                     break;
                 }
 
@@ -166,8 +168,7 @@ namespace AnalysisCDWafer
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
                     no_of_sequence = Convert.ToInt32(substring[1]);
-                    this.sourseDataDictionary.Add("no_of_sequence", no_of_sequence);
-
+                    this.sourseDataDic.Add("no_of_sequence", no_of_sequence);
 
                 }
 
@@ -177,22 +178,32 @@ namespace AnalysisCDWafer
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
                     no_of_chip = Convert.ToInt32(substring[1]);
-                    this.sourseDataDictionary.Add("no_of_chip", no_of_chip);
-
+                    this.sourseDataDic.Add("no_of_chip", no_of_chip);
 
                 }
+
+                if (line.Contains("slot_no"))
+                {
+                    line = line.Replace("       ", string.Empty).Trim();
+                    Char delimetr = ' ';
+                    string[] substring = line.Split(delimetr);
+                    slot_no = Convert.ToInt32(substring[1]);
+                    this.sourseDataDic.Add("slot_no", slot_no);
+
+                }
+
 
             }
 
             Console.WriteLine("no_of_mp = {0}\nno_of_sequence = {1}\nno_of_chip = {2}", no_of_mp, no_of_sequence, no_of_chip);
 
-            foreach (var elem in sourseDataDictionary)
+            foreach (var elem in sourseDataDic)
             {
                 Console.WriteLine(elem);
             }
 
             //отсеивание всех стредних штрих
-            while ((line = streamReader.ReadLine()) != null)
+            while ((line = _streamReader.ReadLine()) != null)
             {
 
                 bool rulle_Mean = line.Contains("Mean'") && !line.Contains("Data");
@@ -213,24 +224,24 @@ namespace AnalysisCDWafer
 
         }
 
-        public void CalculatingOnWafer()
+        public List<List<double>> CalculatingOnWafer()
         {
             Console.WriteLine("\n------------------------Wafer-------------------------\n");
-            List<List<double>> arrays = new List<List<double>>();
+            List<List<double>> meansOnWafer = new List<List<double>>();
 
-            for (int i = 0; i < this.sourseDataDictionary["group_number"]; i++)
+            for (int i = 0; i < this.sourseDataDic["group_number"]; i++)
             {
-                arrays.Add(new List<double>());
+                meansOnWafer.Add(new List<double>());
 
-                for (int j = i; j < this.sourseDataDictionary["no_of_sequence"];
-                    j += this.sourseDataDictionary["group_number"])
+                for (int j = i; j < this.sourseDataDic["no_of_sequence"];
+                    j += this.sourseDataDic["group_number"])
                 {
-                    arrays[i].Add(this.meansArray[j]);
+                    meansOnWafer[i].Add(this.meansArray[j]);
 
                 }
-                var tempMean = Mean(arrays[i]);
-                var tempSigma = Sigma(arrays[i]);
-                var tempSweap = Range(arrays[i]);
+                var tempMean = Mean(meansOnWafer[i]);
+                var tempSigma = Sigma(meansOnWafer[i]);
+                var tempSweap = Range(meansOnWafer[i]);
 
                 Console.Write("\nGroup #" + i);
                 Console.Write("\nMean = {0}", tempMean);
@@ -239,27 +250,28 @@ namespace AnalysisCDWafer
 
                 //ExcelWaferWriter(i, arrays[i], tempMean, tempSigma, tempSweap);
             }
+            return meansOnWafer;
         }
 
-        public void CalculationOnChip()
+        public List<List<List<double>>> CalculationOnChip()
         {
             Console.WriteLine("\n------------------------Chips-------------------------\n");
 
             List<List<List<double>>> tempArrayChip = new List<List<List<double>>>();
 
-            for (int i = 0; i < this.sourseDataDictionary["no_of_chip"]; i++)
+            for (int i = 0; i < this.sourseDataDic["no_of_chip"]; i++)
             {
                 Console.WriteLine("Chip #" + i);
                 tempArrayChip.Add(new List<List<double>>());
 
-                for (int k = 0; k < this.sourseDataDictionary["group_number"]; k++)
+                for (int k = 0; k < this.sourseDataDic["group_number"]; k++)
                 {
                     Console.WriteLine("Group #" + k);
                     tempArrayChip[i].Add(new List<double>());
 
-                    for (int j = k + i * this.sourseDataDictionary["no_of_mp"];
-                        j < i * this.sourseDataDictionary["no_of_mp"] +
-                        this.sourseDataDictionary["no_of_mp"]; j += this.sourseDataDictionary["group_number"])
+                    int no_of_mp = this.sourseDataDic["no_of_mp"];
+                    for (int j = k + i * no_of_mp; j < i * no_of_mp + no_of_mp;
+                        j += this.sourseDataDic["group_number"])
                     {
                         tempArrayChip[i][k].Add(this.meansArray[j]);
                     }
@@ -280,7 +292,7 @@ namespace AnalysisCDWafer
                     Console.WriteLine("\n");
                 }
             }
-
+            return tempArrayChip;
         }
 
         private void ExcelChipWriter(int ChipNumber, int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
@@ -338,6 +350,36 @@ namespace AnalysisCDWafer
             this.workSheet.Cells[this.rowCounter, 1] = "Sweap";
             this.workSheet.Cells[this.rowCounter, 2] = Sweap;
         }
+
+        public void ExcelSaveHeader()
+        {
+            List<string> listHeader = ReadHeader();
+
+            var i = 1;
+            foreach (string elem in listHeader)
+            {
+                string fieldName = "";
+                string fieldValue = "";
+                List<string> listValues = new List<string>();
+
+                Char delimetr = ' ';
+                string tmp = elem.Replace("  ", string.Empty).Trim();
+
+                //string[] substring = tmp.Split(delimetr);
+
+                this.workSheet.Cells[i, 1] = elem;
+                               
+                
+                //fieldName = listValues[0];
+                //fieldValue = listValues[1];
+
+                //this.workSheet.Cells[i, 1] = fieldName;
+                //this.workSheet.Cells[i, 2] = fieldValue;
+
+                i++;
+            }
+        }
+
 
     }
 }

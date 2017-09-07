@@ -39,16 +39,19 @@ namespace AnalysisCDWafer
 
                 fileAnalyiser.ExcelFileOpener();
 
-                fileAnalyiser.WriteTenLine();
+                fileAnalyiser.ReadHeader();
 
                 fileAnalyiser.CollectionOfSourceData();
-                // расчет по чипу
-
+                
                 fileAnalyiser.CalculatingOnWafer();
-                //fileAnalyiser.CalculationOnChip();
+
+                fileAnalyiser.CalculationOnChip();
+
+                fileAnalyiser.ExcelSaveHeader();
+
+                fileAnalyiser.ExcelSaver();
 
 
-                //fileAnalyiser.ExcelSaver();
                 //testing
 
 
