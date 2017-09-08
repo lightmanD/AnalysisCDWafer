@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -19,6 +20,8 @@ namespace AnalysisCDWafer
         private int rowCounter = 0; //для подсчета строк и дописывания в Excel файл
         private Dictionary<string, int> sourseDataDic = new Dictionary<string, int>(); // для исходных данных
         private List<double> meansArray = new List<double>();
+
+        string recipeName;
 
         Excel.Application excApp;
         Excel.Worksheet workSheet;
@@ -58,10 +61,15 @@ namespace AnalysisCDWafer
             DateTime dt = DateTime.Now;
             string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\";
 
-            path += dt.Day + "." + dt.Month + "." + dt.Year + "." + dt.Hour + "." + dt.Minute + "." + dt.Second;
+            path += dt.Hour.ToString() + dt.Minute.ToString() + dt.Second.ToString() +
+                "_" + dt.Day.ToString() + dt.Month.ToString() + dt.Year.ToString();
+            path += "_"+recipeName.ToString()+"_";
+            path += "W_"+ sourseDataDic["slot_no"].ToString();
             path += ".xls";
 
             this.workBook.SaveAs(path, Excel.XlSaveAsAccessMode.xlNoChange);
+            this.workBook.Close();
+            this.excApp.Quit();
 
         }
 
@@ -295,6 +303,7 @@ namespace AnalysisCDWafer
             return tempArrayChip;
         }
 
+        // old method
         private void ExcelChipWriter(int ChipNumber, int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
         {
             rowCounter++;
@@ -326,6 +335,7 @@ namespace AnalysisCDWafer
 
         }
 
+        //old method
         private void ExcelWaferWriter(int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
         {
 
@@ -351,6 +361,7 @@ namespace AnalysisCDWafer
             this.workSheet.Cells[this.rowCounter, 2] = Sweap;
         }
 
+        //old method
         public void ExcelSaveHeader()
         {
             List<string> listHeader = ReadHeader();
@@ -388,15 +399,60 @@ namespace AnalysisCDWafer
             }
         }
 
+        public void ExcelSaveHeaderNew()
+        {
+
+            List<string> listHeader = ReadHeader();
+            String pattern = @"\S+";
+            List<string> matches = new List<string>();
+
+            foreach (var expression in listHeader)
+                foreach (Match m in Regex.Matches(expression, pattern))
+                {
+                    matches.Add(m.ToString());
+                }
+
+            matches.Remove(">ver");
+            matches.Remove("MF01");
+            matches.Remove("00.00");
+
+            this.recipeName = matches[7];
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    this.workSheet.Cells[i / 2 + 1, 1] = matches[i];
+                }
+                else
+                {
+                    this.workSheet.Cells[i / 2 + 1, 2] = matches[i];
+
+                }
+
+            }
+
+            int j = 12;
+            foreach (var elem in this.sourseDataDic)
+            {
+                this.workSheet.Cells[j, 1] = elem.Key;
+                this.workSheet.Cells[j, 2] = elem.Value;
+                j++;
+            }
+
+        }
+
         public void ExcelWaferSaver(List<List<double>> inputList)
         {
-            this.workSheet.Cells[19, 2] = "Mean";
-            this.workSheet.Cells[20, 2] = "Sigma";
-            this.workSheet.Cells[21, 2] = "Range";
 
-            this.workSheet.Cells[23, 2] = "All values";
+            this.workSheet.Cells[19, 3] = "Group number";
+            this.workSheet.Cells[20, 3] = "Mean";
+            this.workSheet.Cells[21, 3] = "Sigma";
+            this.workSheet.Cells[22, 3] = "Range";
 
-            var groupNum = 3;
+            this.workSheet.Cells[24, 3] = "All values";
+
+            var groupNum = 4;
             foreach (var group in inputList)
             {
 
@@ -404,13 +460,13 @@ namespace AnalysisCDWafer
                 var sigma = Sigma(group);
                 var range = Range(group);
 
-                this.workSheet.Cells[18, groupNum] = groupNum;
-                this.workSheet.Cells[19, groupNum] = Mean(group);
-                this.workSheet.Cells[20, groupNum] = Sigma(group);
-                this.workSheet.Cells[21, groupNum] = Range(group);
+                this.workSheet.Cells[19, groupNum] = groupNum - 3;
+                this.workSheet.Cells[20, groupNum] = Mean(group);
+                this.workSheet.Cells[21, groupNum] = Sigma(group);
+                this.workSheet.Cells[22, groupNum] = Range(group);
 
 
-                var rowCounter = 23;
+                var rowCounter = 24;
                 foreach (var elem in group)
                 {
                     this.workSheet.Cells[rowCounter, groupNum] = elem;
