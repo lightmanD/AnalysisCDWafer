@@ -17,7 +17,7 @@ namespace AnalysisCDWafer
         private StreamReader _streamReader;
         private string _filesDirectories;
 
-        private int rowCounter = 0; //для подсчета строк и дописывания в Excel файл
+        private int rowCounter = 0; //для подсчета строк и дописывания в Excel файл (неактупльно)
         private Dictionary<string, int> sourseDataDic = new Dictionary<string, int>(); // для исходных данных
         private List<double> meansArray = new List<double>();
 
@@ -65,7 +65,7 @@ namespace AnalysisCDWafer
         {
             DateTime dt = DateTime.Now;
             //string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\";
-            string path = Directory.GetCurrentDirectory();
+            string path = Directory.GetCurrentDirectory() + @"\";
 
             path += dt.Hour.ToString() + "." + dt.Minute.ToString() + "." + dt.Second.ToString() +
                 "_" + dt.Day.ToString() + "." + dt.Month.ToString() + "." + dt.Year.ToString();
@@ -140,27 +140,7 @@ namespace AnalysisCDWafer
 
             Console.WriteLine("Data assembling...");
 
-            int no_of_mp = 0;
-            int no_of_sequence = 0;
-            int no_of_chip = 0;
-            int slot_no = 0;
             int group_number = 0;
-
-            //ввод колличества групп
-            //while (true)
-            //{
-            //    Console.WriteLine("Input number of point's group: ");
-            //    var fileNumberRead = Console.ReadLine();
-            //    Int32.TryParse(fileNumberRead, out group_number);
-
-            //    if (no_of_mp % group_number == 0)
-            //    {
-            //        this.sourseDataDic["group_number"] = group_number;
-            //        break;
-            //    }
-
-            //    else Console.WriteLine("The number of groups is not a multiple of the number of mp");
-            //}
 
             Console.WriteLine("Input number of point's group: ");
             var fileNumberRead = Console.ReadLine();
@@ -177,8 +157,8 @@ namespace AnalysisCDWafer
                     line = line.Replace("  ", string.Empty).Trim();
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
-                    no_of_mp = Convert.ToInt32(substring[1]);
-                    this.sourseDataDic.Add("no_of_mp", no_of_mp);
+
+                    this.sourseDataDic.Add("no_of_mp", Convert.ToInt32(substring[1]));
                     break;
                 }
 
@@ -187,8 +167,7 @@ namespace AnalysisCDWafer
                     line = line.Trim();
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
-                    no_of_sequence = Convert.ToInt32(substring[1]);
-                    this.sourseDataDic.Add("no_of_sequence", no_of_sequence);
+                    this.sourseDataDic.Add("no_of_sequence", Convert.ToInt32(substring[1]));
 
                 }
 
@@ -197,8 +176,7 @@ namespace AnalysisCDWafer
                     line = line.Replace("  ", string.Empty).Trim();
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
-                    no_of_chip = Convert.ToInt32(substring[1]);
-                    this.sourseDataDic.Add("no_of_chip", no_of_chip);
+                    this.sourseDataDic.Add("no_of_chip", Convert.ToInt32(substring[1]));
 
                 }
 
@@ -207,20 +185,11 @@ namespace AnalysisCDWafer
                     line = line.Replace("       ", string.Empty).Trim();
                     Char delimetr = ' ';
                     string[] substring = line.Split(delimetr);
-                    slot_no = Convert.ToInt32(substring[1]);
-                    this.sourseDataDic.Add("slot_no", slot_no);
+                    this.sourseDataDic.Add("slot_no", Convert.ToInt32(substring[1]));
 
                 }
 
 
-            }
-
-            Console.WriteLine("no_of_mp = {0}\nno_of_sequence = {1}\nno_of_chip = {2}",
-                no_of_mp, no_of_sequence, no_of_chip);
-
-            foreach (var elem in sourseDataDic)
-            {
-                Console.WriteLine(elem);
             }
 
             //сбор всех стредних штрих
@@ -317,7 +286,7 @@ namespace AnalysisCDWafer
             return tempArrayChip;
         }
 
-        // old method
+        // old 
         private void ExcelChipWriter(int ChipNumber, int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
         {
             rowCounter++;
@@ -349,7 +318,7 @@ namespace AnalysisCDWafer
 
         }
 
-        //old method
+        //old 
         private void ExcelWaferWriter(int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
         {
 
@@ -375,7 +344,7 @@ namespace AnalysisCDWafer
             this.workSheet.Cells[this.rowCounter, 2] = Sweap;
         }
 
-        //old method
+        //old 
         public void ExcelSaveHeader()
         {
             List<string> listHeader = ReadHeader();
@@ -383,23 +352,11 @@ namespace AnalysisCDWafer
             var i = 1;
             foreach (string elem in listHeader)
             {
-                string fieldName = "";
-                string fieldValue = "";
                 List<string> listValues = new List<string>();
 
-                Char delimetr = ' ';
                 string tmp = elem.Replace("  ", string.Empty).Trim();
 
-                //string[] substring = tmp.Split(delimetr);
-
                 this.workSheet.Cells[i, 1] = elem;
-
-
-                //fieldName = listValues[0];
-                //fieldValue = listValues[1];
-
-                //this.workSheet.Cells[i, 1] = fieldName;
-                //this.workSheet.Cells[i, 2] = fieldValue;
 
                 i++;
             }
@@ -490,24 +447,46 @@ namespace AnalysisCDWafer
             }
         }
 
-        public void CollectionMapPoints()
+        public List<string> CollectionMapPoints()
         {
             OpenFile();
 
             List<string> mpList = new List<string>();
             string line;
+
             while ((line = _streamReader.ReadLine()) != null)
             {
-                string pattern = "~mp_name";
+                string patternMp = "~mp_name";
 
-                if (line.Contains(pattern))
+                if (line.Contains(patternMp))
                 {
+
                     mpList.Add(line);
                 }
             }
 
+            List<string> mpNamesList = new List<string>();
+            string re1 = ".*?"; // Non-greedy match on filler
+            string re2 = "(\".*?\")";   // Double Quote String 1
+
+            Regex r = new Regex(re1 + re2, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            foreach (var expression in mpList)
+            {
+                Match m = r.Match(expression);
+                if (m.Success)
+                {
+                    String string1 = m.Groups[1].ToString();
+                    string1 = string1.Replace('"', '\0');
+                    mpNamesList.Add(string1.ToString());
+                }
+            }
 
             CloseFile();
+
+            return mpNamesList;
         }
+
+
     }
 }
+

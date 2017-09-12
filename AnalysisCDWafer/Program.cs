@@ -42,6 +42,8 @@ namespace AnalysisCDWafer
                 //fileAnalyiser.ReadHeader();
 
                 fileAnalyiser.CollectionOfSourceData();
+                
+                fileAnalyiser.CollectionMapPoints();
 
                 var resultWafer = fileAnalyiser.CalculatingOnWafer();
 
