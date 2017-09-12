@@ -42,24 +42,16 @@ namespace AnalysisCDWafer
                 //fileAnalyiser.ReadHeader();
 
                 fileAnalyiser.CollectionOfSourceData();
-                
-               var resultWafer = fileAnalyiser.CalculatingOnWafer();
+
+                var resultWafer = fileAnalyiser.CalculatingOnWafer();
 
                 //fileAnalyiser.CalculationOnChip();
 
-               //fileAnalyiser.ExcelSaveHeader();
                 fileAnalyiser.ExcelSaveHeaderNew();
 
                 fileAnalyiser.ExcelWaferSaver(resultWafer);
 
                 fileAnalyiser.ExcelSaver();
-
-
-                //testing
-
-
-
-                //testing
 
                 Console.WriteLine("\nInput command: ");
                 exit = Console.ReadLine();

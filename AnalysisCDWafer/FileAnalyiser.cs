@@ -49,22 +49,28 @@ namespace AnalysisCDWafer
 
         public void ExcelFileOpener()
         {
-            string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\result.xlsx";
+            //string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\result.xlsx";
+            string fileResultName = @"\result.xlsx";
+            string fileDirectory = Directory.GetCurrentDirectory();
+            string path = fileDirectory + fileResultName;
+
+
             this.excApp = new Excel.Application();
             this.workBook = excApp.Workbooks.Open(path);
             this.workSheet = workBook.ActiveSheet;
-            // this.workSheet.Cells[1, "A"] = "privet";
+
         }
 
         public void ExcelSaver()
         {
             DateTime dt = DateTime.Now;
-            string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\";
+            //string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\";
+            string path = Directory.GetCurrentDirectory();
 
-            path += dt.Hour.ToString() + dt.Minute.ToString() + dt.Second.ToString() +
-                "_" + dt.Day.ToString() + dt.Month.ToString() + dt.Year.ToString();
-            path += "_"+recipeName.ToString()+"_";
-            path += "W_"+ sourseDataDic["slot_no"].ToString();
+            path += dt.Hour.ToString() + "." + dt.Minute.ToString() + "." + dt.Second.ToString() +
+                "_" + dt.Day.ToString() + "." + dt.Month.ToString() + "." + dt.Year.ToString();
+            path += "_" + recipeName.ToString() + "_";
+            path += "W_" + sourseDataDic["slot_no"].ToString();
             path += ".xls";
 
             this.workBook.SaveAs(path, Excel.XlSaveAsAccessMode.xlNoChange);
@@ -141,20 +147,26 @@ namespace AnalysisCDWafer
             int group_number = 0;
 
             //ввод колличества групп
-            while (true)
-            {
-                Console.WriteLine("Input number of point's group: ");
-                var fileNumberRead = Console.ReadLine();
-                Int32.TryParse(fileNumberRead, out group_number);
+            //while (true)
+            //{
+            //    Console.WriteLine("Input number of point's group: ");
+            //    var fileNumberRead = Console.ReadLine();
+            //    Int32.TryParse(fileNumberRead, out group_number);
 
-                if (no_of_mp % group_number == 0)
-                {
-                    this.sourseDataDic["group_number"] = group_number;
-                    break;
-                }
+            //    if (no_of_mp % group_number == 0)
+            //    {
+            //        this.sourseDataDic["group_number"] = group_number;
+            //        break;
+            //    }
 
-                else Console.WriteLine("The number of groups is not a multiple of the number of mp");
-            }
+            //    else Console.WriteLine("The number of groups is not a multiple of the number of mp");
+            //}
+
+            Console.WriteLine("Input number of point's group: ");
+            var fileNumberRead = Console.ReadLine();
+            Int32.TryParse(fileNumberRead, out group_number);
+            this.sourseDataDic["group_number"] = group_number;
+
 
             string line;
             //нахождение исходных данных
@@ -203,14 +215,15 @@ namespace AnalysisCDWafer
 
             }
 
-            Console.WriteLine("no_of_mp = {0}\nno_of_sequence = {1}\nno_of_chip = {2}", no_of_mp, no_of_sequence, no_of_chip);
+            Console.WriteLine("no_of_mp = {0}\nno_of_sequence = {1}\nno_of_chip = {2}",
+                no_of_mp, no_of_sequence, no_of_chip);
 
             foreach (var elem in sourseDataDic)
             {
                 Console.WriteLine(elem);
             }
 
-            //отсеивание всех стредних штрих
+            //сбор всех стредних штрих
             while ((line = _streamReader.ReadLine()) != null)
             {
 
@@ -235,6 +248,7 @@ namespace AnalysisCDWafer
         public List<List<double>> CalculatingOnWafer()
         {
             Console.WriteLine("\n------------------------Wafer-------------------------\n");
+
             List<List<double>> meansOnWafer = new List<List<double>>();
 
             for (int i = 0; i < this.sourseDataDic["group_number"]; i++)
@@ -254,9 +268,9 @@ namespace AnalysisCDWafer
                 Console.Write("\nGroup #" + i);
                 Console.Write("\nMean = {0}", tempMean);
                 Console.Write("\nSigma = {0}", tempSigma);
-                Console.Write("\nSweap = {0}\n ", tempSweap);
+                Console.Write("\nSweap = {0}\n", tempSweap);
 
-                //ExcelWaferWriter(i, arrays[i], tempMean, tempSigma, tempSweap);
+
             }
             return meansOnWafer;
         }
@@ -474,6 +488,26 @@ namespace AnalysisCDWafer
                 }
                 groupNum++;
             }
+        }
+
+        public void CollectionMapPoints()
+        {
+            OpenFile();
+
+            List<string> mpList = new List<string>();
+            string line;
+            while ((line = _streamReader.ReadLine()) != null)
+            {
+                string pattern = "~mp_name";
+
+                if (line.Contains(pattern))
+                {
+                    mpList.Add(line);
+                }
+            }
+
+
+            CloseFile();
         }
     }
 }
