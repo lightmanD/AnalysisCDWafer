@@ -39,11 +39,7 @@ namespace AnalysisCDWafer
 
                 fileAnalyiser.ExcelFileOpener();
 
-                //fileAnalyiser.ReadHeader();
-
                 fileAnalyiser.CollectionOfSourceData();
-                
-                fileAnalyiser.CollectionMapPoints();
 
                 var resultWafer = fileAnalyiser.CalculatingOnWafer();
 

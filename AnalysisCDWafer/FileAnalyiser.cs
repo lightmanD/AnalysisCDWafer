@@ -17,11 +17,11 @@ namespace AnalysisCDWafer
         private StreamReader _streamReader;
         private string _filesDirectories;
 
-        private int rowCounter = 0; //для подсчета строк и дописывания в Excel файл (неактупльно)
-        private Dictionary<string, int> sourseDataDic = new Dictionary<string, int>(); // для исходных данных
-        private List<double> meansArray = new List<double>();
+        // для исходных данных
+        private Dictionary<string, int> sourseDataDic = new Dictionary<string, int>(); 
+        private List<double> _meansArray = new List<double>();
 
-        string recipeName;
+        private string _recipeName;
 
         Excel.Application excApp;
         Excel.Worksheet workSheet;
@@ -34,6 +34,7 @@ namespace AnalysisCDWafer
 
         }
 
+        //нерабочий
         public void ExcelFileCreator()
         {
 
@@ -45,7 +46,7 @@ namespace AnalysisCDWafer
 
             excApp.ActiveWorkbook.SaveAs(@"Book1.xls");
 
-        }//нерабочий
+        }
 
         public void ExcelFileOpener()
         {
@@ -64,18 +65,20 @@ namespace AnalysisCDWafer
         public void ExcelSaver()
         {
             DateTime dt = DateTime.Now;
-            //string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\";
             string path = Directory.GetCurrentDirectory() + @"\";
 
             path += dt.Hour.ToString() + "." + dt.Minute.ToString() + "." + dt.Second.ToString() +
                 "_" + dt.Day.ToString() + "." + dt.Month.ToString() + "." + dt.Year.ToString();
-            path += "_" + recipeName.ToString() + "_";
+            path += "_" + _recipeName.ToString() + "_";
             path += "W_" + sourseDataDic["slot_no"].ToString();
             path += ".xls";
 
             this.workBook.SaveAs(path, Excel.XlSaveAsAccessMode.xlNoChange);
             this.workBook.Close();
             this.excApp.Quit();
+
+            this.workBook = null;
+            this.excApp = null;
 
         }
 
@@ -88,7 +91,9 @@ namespace AnalysisCDWafer
         private void CloseFile()
         {
             _streamReader.Close();
+            _streamReader = null;
             _file.Close();
+            _file = null;
         }
 
         public List<string> ReadHeader()
@@ -204,7 +209,7 @@ namespace AnalysisCDWafer
 
                     Char delimetr = ':';
                     string[] substring = line.Split(delimetr);
-                    this.meansArray.Add(Convert.ToDouble(substring[2]));
+                    this._meansArray.Add(Convert.ToDouble(substring[2]));
 
                 }
 
@@ -212,6 +217,16 @@ namespace AnalysisCDWafer
 
             CloseFile();
 
+        }
+
+        public void CollectionGroupNumber()
+        {
+            int group_number = 0;
+
+            Console.WriteLine("Input number of point's group: ");
+            var fileNumberRead = Console.ReadLine();
+            Int32.TryParse(fileNumberRead, out group_number);
+            this.sourseDataDic["group_number"] = group_number;
         }
 
         public List<List<double>> CalculatingOnWafer()
@@ -227,7 +242,7 @@ namespace AnalysisCDWafer
                 for (int j = i; j < this.sourseDataDic["no_of_sequence"];
                     j += this.sourseDataDic["group_number"])
                 {
-                    meansOnWafer[i].Add(this.meansArray[j]);
+                    meansOnWafer[i].Add(this._meansArray[j]);
 
                 }
                 var tempMean = Mean(meansOnWafer[i]);
@@ -264,7 +279,7 @@ namespace AnalysisCDWafer
                     for (int j = k + i * no_of_mp; j < i * no_of_mp + no_of_mp;
                         j += this.sourseDataDic["group_number"])
                     {
-                        tempArrayChip[i][k].Add(this.meansArray[j]);
+                        tempArrayChip[i][k].Add(this._meansArray[j]);
                     }
 
                     foreach (var elem in tempArrayChip[i][k])
@@ -286,90 +301,6 @@ namespace AnalysisCDWafer
             return tempArrayChip;
         }
 
-        // old 
-        private void ExcelChipWriter(int ChipNumber, int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
-        {
-            rowCounter++;
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "ChipNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = ChipNumber + 1;
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber + 1;
-
-
-            int colomnCounter = 2;
-            this.rowCounter++;
-            foreach (var elem in inputList)
-            {
-                this.workSheet.Cells[this.rowCounter, colomnCounter++] = elem;
-            }
-
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "Mean";
-            this.workSheet.Cells[this.rowCounter, 2] = Mean;
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "Sigma";
-            this.workSheet.Cells[this.rowCounter, 2] = Sigma;
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "Sweap";
-            this.workSheet.Cells[this.rowCounter, 2] = Sweap;
-
-
-        }
-
-        //old 
-        private void ExcelWaferWriter(int GroupNumber, List<double> inputList, double Mean, double Sigma, double Sweap)
-        {
-
-            rowCounter++;
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "GroupNumber";
-            this.workSheet.Cells[this.rowCounter, 2] = GroupNumber + 1;
-
-            int colomnCounter = 2;
-            this.rowCounter++;
-            foreach (var elem in inputList)
-            {
-                this.workSheet.Cells[this.rowCounter, colomnCounter++] = elem;
-            }
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "Mean";
-            this.workSheet.Cells[this.rowCounter, 2] = Mean;
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "Sigma";
-            this.workSheet.Cells[this.rowCounter, 2] = Sigma;
-            rowCounter++;
-            this.workSheet.Cells[this.rowCounter, 1] = "Sweap";
-            this.workSheet.Cells[this.rowCounter, 2] = Sweap;
-        }
-
-        //old 
-        public void ExcelSaveHeader()
-        {
-            List<string> listHeader = ReadHeader();
-
-            var i = 1;
-            foreach (string elem in listHeader)
-            {
-                List<string> listValues = new List<string>();
-
-                string tmp = elem.Replace("  ", string.Empty).Trim();
-
-                this.workSheet.Cells[i, 1] = elem;
-
-                i++;
-            }
-
-            i++;
-
-            foreach (var elem in this.sourseDataDic)
-            {
-                this.workSheet.Cells[i, 1] = elem.ToString();
-                i++;
-            }
-        }
-
         public void ExcelSaveHeaderNew()
         {
 
@@ -387,7 +318,7 @@ namespace AnalysisCDWafer
             matches.Remove("MF01");
             matches.Remove("00.00");
 
-            this.recipeName = matches[7];
+            this._recipeName = matches[7];
 
             for (int i = 0; i < matches.Count; i++)
             {
@@ -431,7 +362,8 @@ namespace AnalysisCDWafer
                 var sigma = Sigma(group);
                 var range = Range(group);
 
-                this.workSheet.Cells[19, groupNum] = groupNum - 3;
+
+
                 this.workSheet.Cells[20, groupNum] = Mean(group);
                 this.workSheet.Cells[21, groupNum] = Sigma(group);
                 this.workSheet.Cells[22, groupNum] = Range(group);
@@ -445,6 +377,18 @@ namespace AnalysisCDWafer
                 }
                 groupNum++;
             }
+
+            var mpList = CollectionMapPoints();
+
+            int columnCounter = 4;
+            for (int i = 0; i < this.sourseDataDic["group_number"]; i++)
+            {
+                string temp = mpList[i].ToString();
+                temp = temp.Substring(3);
+                this.workSheet.Cells[19, columnCounter++] = temp;
+
+            }
+
         }
 
         public List<string> CollectionMapPoints()
@@ -476,7 +420,7 @@ namespace AnalysisCDWafer
                 if (m.Success)
                 {
                     String string1 = m.Groups[1].ToString();
-                    string1 = string1.Replace('"', '\0');
+                    string1 = string1.Replace('"', ' ');
                     mpNamesList.Add(string1.ToString());
                 }
             }
@@ -485,6 +429,7 @@ namespace AnalysisCDWafer
 
             return mpNamesList;
         }
+
 
 
     }
