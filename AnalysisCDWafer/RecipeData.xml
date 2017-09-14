@@ -2,12 +2,12 @@
 <recipes>
 
   <recipe name ="RX_E_FULL">
-    <group_numbers>8</group_numbers>
+    <group_number>8</group_number>
     <groups>B-ISO-V,B-NES-V,B-ISO-H,B-NES-H,A-ISO-V,A-NES-V,A-ISO-H ,A-NES-H </groups>
   </recipe>
 
   <recipe name ="ABB-PRODUCT-C5L5IDV">
-    <group_numbers>2</group_numbers>
+    <group_number>2</group_number>
     <groups>DEN,ISO</groups>
   </recipe>
 

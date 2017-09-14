@@ -39,9 +39,15 @@ namespace AnalysisCDWafer
 
                 var headMatches = fileAnalyiser.ReadHeadNew();
 
-                fileAnalyiser.CheckRecipeInConfig();
-
                 fileAnalyiser.CollectionOfSourceData();
+
+                if (!fileAnalyiser.CheckRecipeInConfig())
+                {
+                    fileAnalyiser.FormRecipeDataFilling();
+
+                }
+                fileAnalyiser.CollectionDataFromXmlDataRecipe();
+                
 
                 var resultWafer = fileAnalyiser.CalculatingOnWafer();
 
