@@ -37,7 +37,9 @@ namespace AnalysisCDWafer
 
                 FileAnalyiser fileAnalyiser = new FileAnalyiser(filesDirectories[fileNumber]);
 
-                fileAnalyiser.ExcelFileOpener();
+                var headMatches = fileAnalyiser.ReadHeadNew();
+
+                fileAnalyiser.CheckRecipeInConfig();
 
                 fileAnalyiser.CollectionOfSourceData();
 
@@ -45,7 +47,9 @@ namespace AnalysisCDWafer
 
                 //fileAnalyiser.CalculationOnChip();
 
-                fileAnalyiser.ExcelSaveHeaderNew();
+                fileAnalyiser.ExcelFileOpener();
+                                
+                fileAnalyiser.ExcelSaverHead(headMatches);
 
                 fileAnalyiser.ExcelWaferSaver(resultWafer);
 

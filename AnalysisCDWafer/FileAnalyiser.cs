@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using Excel = Microsoft.Office.Interop.Excel;
 
 
@@ -27,6 +28,7 @@ namespace AnalysisCDWafer
         Excel.Worksheet workSheet;
         Excel.Workbook workBook;
 
+        private XmlDocument _xDoc;
 
         public FileAnalyiser(string filesDirectories)
         {
@@ -50,7 +52,6 @@ namespace AnalysisCDWafer
 
         public void ExcelFileOpener()
         {
-            //string path = @"C:\Users\denis\source\repos\AnalysisCDWafer\AnalysisCDWafer\bin\Debug\result.xlsx";
             string fileResultName = @"\result.xlsx";
             string fileDirectory = Directory.GetCurrentDirectory();
             string path = fileDirectory + fileResultName;
@@ -65,7 +66,7 @@ namespace AnalysisCDWafer
         public void ExcelSaver()
         {
             DateTime dt = DateTime.Now;
-            string path = Directory.GetCurrentDirectory() + @"\";
+            string path = Directory.GetCurrentDirectory() + @"\results\";
 
             path += dt.Hour.ToString() + "." + dt.Minute.ToString() + "." + dt.Second.ToString() +
                 "_" + dt.Day.ToString() + "." + dt.Month.ToString() + "." + dt.Year.ToString();
@@ -96,6 +97,18 @@ namespace AnalysisCDWafer
             _file = null;
         }
 
+        private void LoadXmlConfig()
+        {
+            _xDoc = new XmlDocument();
+            _xDoc.Load("RecipeData.xml");
+        }
+
+        private void SaveXmlConfig()
+        {
+            _xDoc.Save("RecipeData.xml");
+            _xDoc = null;
+        }
+        //old
         public List<string> ReadHeader()
         {
             List<string> headerList = new List<string>();
@@ -111,6 +124,40 @@ namespace AnalysisCDWafer
             CloseFile();
 
             return headerList;
+        }
+        //new 
+        public List<string> ReadHeadNew()
+        {
+            List<string> headerList = new List<string>();
+            OpenFile();
+            string temp = "";
+            for (int i = 0; i < 11; i++)
+            {
+                temp = _streamReader.ReadLine();
+                headerList.Add(temp);
+                Console.WriteLine(temp);
+            }
+           
+            String pattern = @"\S+";
+            List<string> matches = new List<string>();
+
+            foreach (var expression in headerList)
+                foreach (Match m in Regex.Matches(expression, pattern))
+                {
+                    matches.Add(m.ToString());
+                }
+
+            matches.Remove(">ver");
+            matches.Remove("MF01");
+            matches.Remove("00.00");
+
+            this._recipeName = matches[7];
+
+
+            CloseFile();
+
+            headerList = null;
+            return matches;
         }
 
         public double Mean(List<double> inputArray)
@@ -301,6 +348,7 @@ namespace AnalysisCDWafer
             return tempArrayChip;
         }
 
+        //old
         public void ExcelSaveHeaderNew()
         {
 
@@ -342,6 +390,32 @@ namespace AnalysisCDWafer
                 j++;
             }
 
+        }
+        //new
+        public void ExcelSaverHead(List <string> matches)
+        {
+          
+            for (int i = 0; i < matches.Count; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    this.workSheet.Cells[i / 2 + 1, 1] = matches[i];
+                }
+                else
+                {
+                    this.workSheet.Cells[i / 2 + 1, 2] = matches[i];
+
+                }
+
+            }
+
+            int j = 12;
+            foreach (var elem in this.sourseDataDic)
+            {
+                this.workSheet.Cells[j, 1] = elem.Key;
+                this.workSheet.Cells[j, 2] = elem.Value;
+                j++;
+            }
         }
 
         public void ExcelWaferSaver(List<List<double>> inputList)
@@ -390,7 +464,7 @@ namespace AnalysisCDWafer
             }
 
         }
-
+    
         public List<string> CollectionMapPoints()
         {
             OpenFile();
@@ -430,7 +504,15 @@ namespace AnalysisCDWafer
             return mpNamesList;
         }
 
+        public void CheckRecipeInConfig()
+        {
+            LoadXmlConfig();
 
+            SaveXmlConfig();
+
+        }
+
+        
 
     }
 }
