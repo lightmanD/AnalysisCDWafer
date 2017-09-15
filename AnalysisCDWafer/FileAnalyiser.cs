@@ -175,14 +175,6 @@ namespace AnalysisCDWafer
             Console.WriteLine("+Сбор исходнных данных+");
             OpenFile();
 
-                      //int group_number = 0;
-
-            //Console.WriteLine("Input number of point's group: ");
-            //var fileNumberRead = Console.ReadLine();
-            //Int32.TryParse(fileNumberRead, out group_number);
-            //this._sourseDataDic["group_number"] = group_number;
-
-
             string line;
             //нахождение исходных данных
             while ((line = _streamReader.ReadLine()) != null)
@@ -268,7 +260,7 @@ namespace AnalysisCDWafer
 
         public List<List<double>> CalculatingOnWafer()
         {
-            Console.WriteLine("\n------------------------Wafer-------------------------\n");
+            Console.WriteLine("\n----------------Расчет-по-пластине--------------------\n");
 
             List<List<double>> meansOnWafer = new List<List<double>>();
 
@@ -338,53 +330,10 @@ namespace AnalysisCDWafer
             return tempArrayChip;
         }
 
-        //old
-        public void ExcelSaveHeaderNew()
-        {
-
-            List<string> listHeader = ReadHeadNew();
-            String pattern = @"\S+";
-            List<string> matches = new List<string>();
-
-            foreach (var expression in listHeader)
-                foreach (Match m in Regex.Matches(expression, pattern))
-                {
-                    matches.Add(m.ToString());
-                }
-
-            matches.Remove(">ver");
-            matches.Remove("MF01");
-            matches.Remove("00.00");
-
-            this._recipeName = matches[7];
-
-            for (int i = 0; i < matches.Count; i++)
-            {
-                if (i % 2 == 0)
-                {
-                    this.workSheet.Cells[i / 2 + 1, 1] = matches[i];
-                }
-                else
-                {
-                    this.workSheet.Cells[i / 2 + 1, 2] = matches[i];
-
-                }
-
-            }
-
-            int j = 12;
-            foreach (var elem in this._sourseDataDic)
-            {
-                this.workSheet.Cells[j, 1] = elem.Key;
-                this.workSheet.Cells[j, 2] = elem.Value;
-                j++;
-            }
-
-        }
         //new
         public void ExcelSaverHead(List<string> matches)
         {
-
+            Console.WriteLine("+Сохранение заголовка+");
             for (int i = 0; i < matches.Count; i++)
             {
                 if (i % 2 == 0)
@@ -410,6 +359,7 @@ namespace AnalysisCDWafer
 
         public void ExcelWaferSaver(List<List<double>> inputList)
         {
+            Console.WriteLine("+Запись расчетов по пластине+");
 
             this.workSheet.Cells[19, 3] = "Group number";
             this.workSheet.Cells[20, 3] = "Mean";
@@ -442,7 +392,9 @@ namespace AnalysisCDWafer
                 groupNum++;
             }
 
-            var mpList = CollectionMapPoints();
+            //писать в Excel нужно из Xml метод CollectGroupsNameFromXmlDataRecipe
+            //var mpList = CollectionAllMapPoints();
+            var mpList = CollectGroupsNameFromXmlDataRecipe();
 
             int columnCounter = 4;
             foreach (var elem in mpList)
@@ -452,7 +404,7 @@ namespace AnalysisCDWafer
 
         }
 
-        public List<string> CollectionMapPoints()
+        public List<string> CollectionAllMapPoints()
         {
             List<string> mpList = new List<string>();
             string line;
@@ -465,7 +417,6 @@ namespace AnalysisCDWafer
 
                 if (line.Contains(patternMp))
                 {
-
                     mpList.Add(line);
                 }
             }
@@ -488,15 +439,26 @@ namespace AnalysisCDWafer
                 }
             }
 
+            return mpNamesList;
+        }
+
+        public List<string> FilteringMPNames(List<string> inputList)
+        {
+
+            foreach (var elem in inputList) Console.WriteLine(elem);
+
+            //ввод колличества групп
+            CollectionGroupNumber();
+
             List<string> groupNames = new List<string>();
 
             for (int i = 0; i < this._sourseDataDic["group_number"]; i++)
             {
-                string temp = mpNamesList[i].ToString();
-                temp = temp.Substring(4);
+                string temp = inputList[i].ToString();
+                char delim = '-';
+                int indexDelim = temp.IndexOf(delim);
+                temp = temp.Substring(indexDelim + 1);
                 groupNames.Add(temp);
-
-
             }
             return groupNames;
         }
@@ -511,7 +473,7 @@ namespace AnalysisCDWafer
                 XAttribute nameAttribute = recipeElem.Attribute("name");
                 if (nameAttribute.Value.ToString() == _recipeName)
                 {
-                    
+
                     Console.WriteLine("+Пройдена+");
                     return true;
                 }
@@ -528,14 +490,18 @@ namespace AnalysisCDWafer
             Console.WriteLine("Запись новых данных для рецепта+");
             LoadXmlConfig();
 
-            XElement root = _xDoc.Element("recipes");
+            var mpList = FilteringMPNames(CollectionAllMapPoints());
+            foreach (var elem in mpList)
+            {
+                Console.WriteLine(elem);
+            }
 
-            CollectionGroupNumber();
+            XElement root = _xDoc.Element("recipes");
 
             root.Add(new XElement("recipe",
                 new XAttribute("name", _recipeName),
                 new XElement("group_number", _sourseDataDic["group_number"]),
-                new XElement("groups", CollectionMapPoints())));
+                new XElement("groups", mpList)));
 
             SaveXmlConfig();
         }
@@ -551,8 +517,6 @@ namespace AnalysisCDWafer
                 XElement groupsNumElement = recipeElem.Element("group_number");
                 XElement groupsElement = recipeElem.Element("groups");
 
-
-
                 if (nameAttribute.Value.ToString() == _recipeName)
                 {
                     Int32.TryParse(groupsNumElement.Value.ToString(), out int group_number);
@@ -564,6 +528,31 @@ namespace AnalysisCDWafer
 
             SaveXmlConfig();
 
+        }
+
+        public List<string> CollectGroupsNameFromXmlDataRecipe()
+        {
+            Console.WriteLine("+Сбор имен групп из RecipiData.xml+");
+            LoadXmlConfig();
+
+            List<string> listGroups = new List<string>();
+
+            foreach (XElement recipeElem in _xDoc.Element("recipes").Elements("recipe"))
+            {
+                XAttribute nameAttribute = recipeElem.Attribute("name");
+                XElement groupsNumElement = recipeElem.Element("group_number");
+                XElement groupsElement = recipeElem.Element("groups");
+
+                if (nameAttribute.Value.ToString() == _recipeName)
+                {
+                    var groups = groupsElement.Value;
+                    listGroups = groups.Split(' ').ToList<string>();
+
+                }
+            }
+
+            SaveXmlConfig();
+            return listGroups;
         }
     }
 }
