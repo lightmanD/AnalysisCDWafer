@@ -109,7 +109,7 @@ namespace AnalysisCDWafer
             _xDoc.Save("RecipeData.xml");
             _xDoc = null;
         }
-        //new 
+        
         public List<string> ReadHeadNew()
         {
             Console.WriteLine("+Считывание хэдера+");
@@ -124,6 +124,8 @@ namespace AnalysisCDWafer
             }
 
             String pattern = @"\S+";
+
+            //String pattern = "(\".*?\")";
             List<string> matches = new List<string>();
 
             foreach (var expression in headerList)
@@ -330,7 +332,6 @@ namespace AnalysisCDWafer
             return tempArrayChip;
         }
 
-        //new
         public void ExcelSaverHead(List<string> matches)
         {
             Console.WriteLine("+Сохранение заголовка+");
