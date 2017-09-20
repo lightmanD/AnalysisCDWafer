@@ -172,6 +172,16 @@ namespace AnalysisCDWafer
 
         }
 
+        public double Max(List<double> inputArray)
+        {
+            return inputArray.Max();
+        }
+
+        public double Min(List<double> inputArray)
+        {
+            return inputArray.Min();
+        }
+
         public void CollectionOfSourceData()
         {
             Console.WriteLine("+Сбор исходнных данных+");
@@ -395,12 +405,17 @@ namespace AnalysisCDWafer
         {
             Console.WriteLine("+Запись расчетов по пластине+");
 
+            
+
             this.workSheet.Cells[19, 3] = "Group name";
             this.workSheet.Cells[20, 3] = "Mean";
             this.workSheet.Cells[21, 3] = "Sigma";
             this.workSheet.Cells[22, 3] = "Range";
+            this.workSheet.Cells[23, 3] = "Min";
+            this.workSheet.Cells[24, 3] = "Max";
 
-            this.workSheet.Cells[24, 3] = "All values";
+
+            this.workSheet.Cells[26, 3] = "All values";
 
             var groupNum = 4;
             foreach (var group in inputList)
@@ -416,8 +431,11 @@ namespace AnalysisCDWafer
                 this.workSheet.Cells[21, groupNum] = Sigma(group);
                 this.workSheet.Cells[22, groupNum] = Range(group);
 
+                this.workSheet.Cells[23, groupNum] = Min(group);
+                this.workSheet.Cells[24, groupNum] = Max(group);
 
-                var rowCounter = 24;
+
+                var rowCounter = 26;
                 foreach (var elem in group)
                 {
                     this.workSheet.Cells[rowCounter, groupNum] = elem;
@@ -427,7 +445,7 @@ namespace AnalysisCDWafer
             }
 
             //писать в Excel нужно из Xml метод CollectGroupsNameFromXmlDataRecipe
-            //var mpList = CollectionAllMapPoints();
+            
             var mpList = CollectGroupsNameFromXmlDataRecipe();
 
             int columnCounter = 4;
@@ -588,6 +606,7 @@ namespace AnalysisCDWafer
             SaveXmlConfig();
             return listGroups;
         }
+
     }
 }
 

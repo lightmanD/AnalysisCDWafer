@@ -61,7 +61,7 @@ namespace AnalysisCDWafer
 
                 fileAnalyiser.ExcelSaver();
 
-                Console.WriteLine("\nInput command: ");
+                Console.WriteLine("\nInput command (q or exit to quit): ");
                 exit = Console.ReadLine();
 
             }

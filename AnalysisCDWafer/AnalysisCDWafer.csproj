@@ -48,7 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="result.xlsx" />
+    <None Include="result.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="ACTIVEXLib">
@@ -89,7 +91,9 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="RecipeData.xml" />
+    <Content Include="RecipeData.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
