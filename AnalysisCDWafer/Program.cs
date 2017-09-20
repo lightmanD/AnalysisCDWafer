@@ -44,8 +44,8 @@ namespace AnalysisCDWafer
                 if (!fileAnalyiser.CheckRecipeInConfig())
                 {
                     fileAnalyiser.FormRecipeDataFilling();
-
                 }
+
                 fileAnalyiser.CollectionDataFromXmlDataRecipe();
                 
 

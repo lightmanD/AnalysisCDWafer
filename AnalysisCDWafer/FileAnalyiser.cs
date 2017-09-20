@@ -109,7 +109,7 @@ namespace AnalysisCDWafer
             _xDoc.Save("RecipeData.xml");
             _xDoc = null;
         }
-        
+
         public List<string> ReadHeadNew()
         {
             Console.WriteLine("+Считывание хэдера+");
@@ -178,6 +178,7 @@ namespace AnalysisCDWafer
             OpenFile();
 
             string line;
+            string typeOfData = "";
             //нахождение исходных данных
             while ((line = _streamReader.ReadLine()) != null)
             {
@@ -188,7 +189,7 @@ namespace AnalysisCDWafer
                     string[] substring = line.Split(delimetr);
 
                     this._sourseDataDic.Add("no_of_mp", Convert.ToInt32(substring[1]));
-                    break;
+
                 }
 
                 if (line.Contains("no_of_sequence"))
@@ -218,33 +219,65 @@ namespace AnalysisCDWafer
 
                 }
 
-
-            }
-
-            //сбор всех стредних штрих
-            while ((line = _streamReader.ReadLine()) != null)
-            {
-
-                bool rulle_Mean = line.Contains("Mean'") && !line.Contains("Data");
-                if (rulle_Mean)
+                if (line.Contains("1 : Data"))
                 {
-
                     line = line.Replace(" ", string.Empty).Replace("nm", string.Empty).Replace(".", ",").Trim();
-
                     Char delimetr = ':';
                     string[] substring = line.Split(delimetr);
-                    this._meansArray.Add(Convert.ToDouble(substring[2]));
 
+                    typeOfData = substring[2];
+
+                    break;
                 }
-
             }
 
+
+            if (typeOfData == "Mean'")
+                //сбор всех стредних штрих
+                while ((line = _streamReader.ReadLine()) != null)
+                {
+
+                    bool rulle_Mean = line.Contains("Mean'") && !line.Contains("Data");
+                    if (rulle_Mean)
+                    {
+
+                        line = line.Replace(" ", string.Empty).Replace("nm", string.Empty).Replace(".", ",").Trim();
+
+                        Char delimetr = ':';
+                        string[] substring = line.Split(delimetr);
+                        this._meansArray.Add(Convert.ToDouble(substring[2]));
+
+                    }
+
+                }
+            //сбор всех радиусов
+            else
+                while ((line = _streamReader.ReadLine()) != null)
+                {
+
+                    bool rulle_Mean = line.Contains("Diameter") && !line.Contains("Data") && !line.Contains("X") && !line.Contains("Y") && !line.Contains("Object") && !line.Contains("Measurement");
+                    if (rulle_Mean)
+                    {
+                        Console.WriteLine(line);
+
+
+                        line = line.Replace(" ", string.Empty).Replace("nm", string.Empty).Replace(".", ",").Trim();
+
+                        Char delimetr = ':';
+                        string[] substring = line.Split(delimetr);
+                        this._meansArray.Add(Convert.ToDouble(substring[2]));
+
+                    }
+
+                }
+           
             CloseFile();
 
         }
 
         public void CollectionGroupNumber()
         {
+            Console.WriteLine("+Сбор колличества групп+");
             int group_number = 0;
             int INT = 0;
             while (true)
@@ -362,7 +395,7 @@ namespace AnalysisCDWafer
         {
             Console.WriteLine("+Запись расчетов по пластине+");
 
-            this.workSheet.Cells[19, 3] = "Group number";
+            this.workSheet.Cells[19, 3] = "Group name";
             this.workSheet.Cells[20, 3] = "Mean";
             this.workSheet.Cells[21, 3] = "Sigma";
             this.workSheet.Cells[22, 3] = "Range";
