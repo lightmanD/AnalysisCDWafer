@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections;
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml;
+
 using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -24,6 +23,7 @@ namespace AnalysisCDWafer
         private List<double> _meansArray = new List<double>();
 
         private string _recipeName;
+        private string _LotID;
 
         Excel.Application excApp;
         Excel.Worksheet workSheet;
@@ -44,7 +44,7 @@ namespace AnalysisCDWafer
             this.excApp = new Excel.Application();
             excApp.Visible = true;
             this.workBook = this.excApp.Workbooks.Add();
-            this.workSheet = this.workBook.Worksheets[1];
+            this.workSheet = this.workBook.Worksheets[1] as Excel.Worksheet;
 
 
             excApp.ActiveWorkbook.SaveAs(@"Book1.xls");
@@ -60,7 +60,7 @@ namespace AnalysisCDWafer
 
             this.excApp = new Excel.Application();
             this.workBook = excApp.Workbooks.Open(path);
-            this.workSheet = workBook.ActiveSheet;
+            this.workSheet = workBook.ActiveSheet as Excel.Worksheet;
 
         }
 
@@ -69,8 +69,8 @@ namespace AnalysisCDWafer
             DateTime dt = DateTime.Now;
             string path = Directory.GetCurrentDirectory() + @"\results\";
 
-            path += dt.Hour.ToString() + "." + dt.Minute.ToString() + "." + dt.Second.ToString() +
-                "_" + dt.Day.ToString() + "." + dt.Month.ToString() + "." + dt.Year.ToString();
+            Console.WriteLine("LotID"+_LotID);
+            path += "_"+ _LotID;
             path += "_" + _recipeName.ToString() + "_";
             path += "W_" + _sourseDataDic["slot_no"].ToString();
             path += ".xls";
@@ -139,6 +139,8 @@ namespace AnalysisCDWafer
             matches.Remove("00.00");
 
             _recipeName = matches[7].Trim();
+            _LotID = matches[11].Trim().Replace("\"",string.Empty);
+
 
             CloseFile();
 
