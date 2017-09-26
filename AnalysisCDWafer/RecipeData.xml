@@ -3,6 +3,7 @@
   <recipe name="BP-LITHO">
     <group_number>2</group_number>
     <groups>B-VN B-VI </groups>
+    <cntl_value>500,0 500,0 500,0 500,0 500,0</cntl_value>
   </recipe>
   <recipe name="ABA-ETCH">
     <group_number>2</group_number>

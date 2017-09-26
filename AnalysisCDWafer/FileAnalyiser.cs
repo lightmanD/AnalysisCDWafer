@@ -69,8 +69,7 @@ namespace AnalysisCDWafer
             DateTime dt = DateTime.Now;
             string path = Directory.GetCurrentDirectory() + @"\results\";
 
-            Console.WriteLine("LotID"+_LotID);
-            path += "_"+ _LotID;
+            path += "_" + _LotID;
             path += "_" + _recipeName.ToString() + "_";
             path += "W_" + _sourseDataDic["slot_no"].ToString();
             path += ".xls";
@@ -139,7 +138,7 @@ namespace AnalysisCDWafer
             matches.Remove("00.00");
 
             _recipeName = matches[7].Trim();
-            _LotID = matches[11].Trim().Replace("\"",string.Empty);
+            _LotID = matches[11].Trim().Replace("\"", string.Empty);
 
 
             CloseFile();
@@ -270,8 +269,6 @@ namespace AnalysisCDWafer
                     bool rulle_Mean = line.Contains("Diameter") && !line.Contains("Data") && !line.Contains("X") && !line.Contains("Y") && !line.Contains("Object") && !line.Contains("Measurement");
                     if (rulle_Mean)
                     {
-                        Console.WriteLine(line);
-
 
                         line = line.Replace(" ", string.Empty).Replace("nm", string.Empty).Replace(".", ",").Trim();
 
@@ -282,7 +279,7 @@ namespace AnalysisCDWafer
                     }
 
                 }
-           
+
             CloseFile();
 
         }
@@ -407,7 +404,7 @@ namespace AnalysisCDWafer
         {
             Console.WriteLine("+Запись расчетов по пластине+");
 
-            
+
 
             this.workSheet.Cells[19, 3] = "Group name";
             this.workSheet.Cells[20, 3] = "Mean";
@@ -447,7 +444,7 @@ namespace AnalysisCDWafer
             }
 
             //писать в Excel нужно из Xml метод CollectGroupsNameFromXmlDataRecipe
-            
+
             var mpList = CollectGroupsNameFromXmlDataRecipe();
 
             int columnCounter = 4;
@@ -545,6 +542,8 @@ namespace AnalysisCDWafer
             LoadXmlConfig();
 
             var mpList = FilteringMPNames(CollectionAllMapPoints());
+            var ctrlValues = CollectCtrlValue();
+
             foreach (var elem in mpList)
             {
                 Console.WriteLine(elem);
@@ -555,7 +554,8 @@ namespace AnalysisCDWafer
             root.Add(new XElement("recipe",
                 new XAttribute("name", _recipeName),
                 new XElement("group_number", _sourseDataDic["group_number"]),
-                new XElement("groups", mpList)));
+                new XElement("groups", mpList),
+                new XElement("cntl_value",ctrlValues)));
 
             SaveXmlConfig();
         }
@@ -563,25 +563,22 @@ namespace AnalysisCDWafer
         public void CollectionDataFromXmlDataRecipe()
         {
             Console.WriteLine("+Сбор данных из RecipiData.xml+");
+
             LoadXmlConfig();
 
             foreach (XElement recipeElem in _xDoc.Element("recipes").Elements("recipe"))
             {
                 XAttribute nameAttribute = recipeElem.Attribute("name");
                 XElement groupsNumElement = recipeElem.Element("group_number");
-                XElement groupsElement = recipeElem.Element("groups");
+                //XElement groupsElement = recipeElem.Element("groups");
 
                 if (nameAttribute.Value.ToString() == _recipeName)
                 {
                     Int32.TryParse(groupsNumElement.Value.ToString(), out int group_number);
                     _sourseDataDic["group_number"] = group_number;
-
-
                 }
             }
-
             SaveXmlConfig();
-
         }
 
         public List<string> CollectGroupsNameFromXmlDataRecipe()
@@ -608,6 +605,15 @@ namespace AnalysisCDWafer
             SaveXmlConfig();
             return listGroups;
         }
+
+        private string CollectCtrlValue()
+        {
+            Console.WriteLine("Введите значения границ(формат USL UCL Target LCL LSL) ");
+            string input = Console.ReadLine();
+
+            return input;
+        }
+
 
     }
 }
