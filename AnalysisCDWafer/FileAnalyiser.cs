@@ -21,9 +21,11 @@ namespace AnalysisCDWafer
         // для исходных данных
         private Dictionary<string, int> _sourseDataDic = new Dictionary<string, int>();
         private List<double> _meansArray = new List<double>();
+        private List<double> _ctrlValues = new List<double>();
 
         private string _recipeName;
         private string _LotID;
+
 
         Excel.Application excApp;
         Excel.Worksheet workSheet;
@@ -62,6 +64,14 @@ namespace AnalysisCDWafer
             this.workBook = excApp.Workbooks.Open(path);
             this.workSheet = workBook.ActiveSheet as Excel.Worksheet;
 
+        }
+
+        private void ExcelNewSheet()
+        {
+            Excel.Worksheet newWorksheet;
+            newWorksheet = (Excel.Worksheet)this.excApp.Worksheets.Add();
+            this.workSheet = newWorksheet;
+            this.workSheet = workBook.ActiveSheet as Excel.Worksheet;
         }
 
         public void ExcelSaver()
@@ -444,7 +454,7 @@ namespace AnalysisCDWafer
             }
 
             //писать в Excel нужно из Xml метод CollectGroupsNameFromXmlDataRecipe
-
+            //так оно и пишет
             var mpList = CollectGroupsNameFromXmlDataRecipe();
 
             int columnCounter = 4;
@@ -555,7 +565,7 @@ namespace AnalysisCDWafer
                 new XAttribute("name", _recipeName),
                 new XElement("group_number", _sourseDataDic["group_number"]),
                 new XElement("groups", mpList),
-                new XElement("cntl_value",ctrlValues)));
+                new XElement("ctrl_value", ctrlValues)));
 
             SaveXmlConfig();
         }
@@ -570,12 +580,15 @@ namespace AnalysisCDWafer
             {
                 XAttribute nameAttribute = recipeElem.Attribute("name");
                 XElement groupsNumElement = recipeElem.Element("group_number");
-                //XElement groupsElement = recipeElem.Element("groups");
+                XElement groupsElement = recipeElem.Element("groups");
+                XElement ctrlValuesElement = recipeElem.Element("ctrl_value");
 
                 if (nameAttribute.Value.ToString() == _recipeName)
                 {
                     Int32.TryParse(groupsNumElement.Value.ToString(), out int group_number);
                     _sourseDataDic["group_number"] = group_number;
+
+                    _ctrlValues = CollecttionCtrlValuesFromXml(ctrlValuesElement.Value.ToString());
                 }
             }
             SaveXmlConfig();
@@ -614,7 +627,24 @@ namespace AnalysisCDWafer
             return input;
         }
 
+        private List<double> CollecttionCtrlValuesFromXml(string inputString)
+        {
+            List<double> ctrlValues = new List<double>();
 
+            string[] stringSplit = inputString.Split(' ');
+
+            foreach (var elem in stringSplit)
+            {
+                ctrlValues.Add(Double.Parse(elem));
+            }
+
+            return ctrlValues;
+        }
+
+        private void ColorValue()
+        {
+
+        }
     }
 }
 

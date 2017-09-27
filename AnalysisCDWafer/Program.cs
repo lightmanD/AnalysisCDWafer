@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using System.IO;
 
 
@@ -25,44 +25,62 @@ namespace AnalysisCDWafer
                 }
 
                 int fileNumber;
+                List<int> fileNumbers = new List<int>();
                 while (true)
                 {
-                    Console.WriteLine("Input file number: ");
-                    var fileNumberRead = Console.ReadLine();
-                    Int32.TryParse(fileNumberRead, out fileNumber);
-                    if (fileNumber < counter) break;
+                    Console.WriteLine("Введите номера файлов: ");
+                    string fileNumberRead = Console.ReadLine().Trim();
+                    string[] stringSplit = fileNumberRead.Split(' ');
+
+                    
+                    foreach (var elem in stringSplit)
+                    {
+                        int num = Int16.Parse(elem);
+                        if (num > counter || num < 0) break;
+                        fileNumbers.Add(num);
+                        
+                    }
+
+                    if (counter < fileNumbers.Count || fileNumbers.Count!=0 || stringSplit.Length==fileNumbers.Count) break;        
                 }
 
-                FileAnalyiser fileAnalyiser = new FileAnalyiser(filesDirectories[fileNumber]);
-
-                var headMatches = fileAnalyiser.ReadHeadNew();
-
-                fileAnalyiser.CollectionOfSourceData();
-
-                if (!fileAnalyiser.CheckRecipeInConfig())
+                foreach (var num in fileNumbers)
                 {
-                    fileAnalyiser.FormRecipeDataFilling();
+                    string fileDirectory = filesDirectories[num];
+
+                    FileAnalyiser fileAnalyiser = new FileAnalyiser(fileDirectory);
+
+                    var headMatches = fileAnalyiser.ReadHeadNew();
+
+                    fileAnalyiser.CollectionOfSourceData();
+
+                    if (!fileAnalyiser.CheckRecipeInConfig())
+                    {
+                        fileAnalyiser.FormRecipeDataFilling();
+                    }
+
+                    fileAnalyiser.CollectionDataFromXmlDataRecipe();
+
+                    var resultWafer = fileAnalyiser.CalculatingOnWafer();
+
+                    //fileAnalyiser.CalculationOnChip();
+
+
+
+                    fileAnalyiser.ExcelFileOpener();
+
+                    fileAnalyiser.ExcelSaverHead(headMatches);
+
+                    fileAnalyiser.ExcelWaferSaver(resultWafer);
+
+                    fileAnalyiser.ExcelSaver();
+                                        
                 }
-
-                fileAnalyiser.CollectionDataFromXmlDataRecipe();
-                
-
-                var resultWafer = fileAnalyiser.CalculatingOnWafer();
-
-                //fileAnalyiser.CalculationOnChip();
-
-                fileAnalyiser.ExcelFileOpener();
-                                
-                fileAnalyiser.ExcelSaverHead(headMatches);
-
-                fileAnalyiser.ExcelWaferSaver(resultWafer);
-
-                fileAnalyiser.ExcelSaver();
-
                 Console.WriteLine("\nInput command (q or exit to quit): ");
                 exit = Console.ReadLine();
-
             }
         }
+
+
     }
 }
