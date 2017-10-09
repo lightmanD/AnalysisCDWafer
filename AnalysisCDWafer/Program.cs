@@ -17,14 +17,14 @@ namespace AnalysisCDWafer
             {
                 string[] filesDirectories = Directory.GetFiles("files/");
 
-                var counter = 0;
+                int counter = 0;
                 foreach (string f in filesDirectories)
                 {
                     Console.WriteLine("№ {0} : {1}", counter, f);
                     counter++;
                 }
 
-                int fileNumber;
+                //int fileNumber;
                 List<int> fileNumbers = new List<int>();
                 while (true)
                 {
@@ -32,23 +32,26 @@ namespace AnalysisCDWafer
                     string fileNumberRead = Console.ReadLine().Trim();
                     string[] stringSplit = fileNumberRead.Split(' ');
 
-                    
+                    //parse file's numbers
                     foreach (var elem in stringSplit)
                     {
                         int num = Int16.Parse(elem);
                         if (num > counter || num < 0) break;
                         fileNumbers.Add(num);
-                        
+
                     }
 
-                    if (counter < fileNumbers.Count || fileNumbers.Count!=0 || stringSplit.Length==fileNumbers.Count) break;        
+                    if (counter < fileNumbers.Count || fileNumbers.Count != 0 || stringSplit.Length == fileNumbers.Count) break;
                 }
+
+                int iter = 0;
+                FileAnalyiser fileAnalyiser;
 
                 foreach (var num in fileNumbers)
                 {
                     string fileDirectory = filesDirectories[num];
 
-                    FileAnalyiser fileAnalyiser = new FileAnalyiser(fileDirectory);
+                    fileAnalyiser = new FileAnalyiser(fileDirectory);
 
                     var headMatches = fileAnalyiser.ReadHeadNew();
 
@@ -65,8 +68,6 @@ namespace AnalysisCDWafer
 
                     //fileAnalyiser.CalculationOnChip();
 
-
-
                     fileAnalyiser.ExcelFileOpener();
 
                     fileAnalyiser.ExcelSaverHead(headMatches);
@@ -74,7 +75,8 @@ namespace AnalysisCDWafer
                     fileAnalyiser.ExcelWaferSaver(resultWafer);
 
                     fileAnalyiser.ExcelSaver();
-                                        
+
+                    iter++;
                 }
                 Console.WriteLine("\nInput command (q or exit to quit): ");
                 exit = Console.ReadLine();

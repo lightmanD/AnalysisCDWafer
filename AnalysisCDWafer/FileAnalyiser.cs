@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
-
+//HELLO
 namespace AnalysisCDWafer
 {
     public class FileAnalyiser
@@ -66,7 +66,7 @@ namespace AnalysisCDWafer
 
         }
 
-        private void ExcelNewSheet()
+        public void ExcelNewSheet()
         {
             Excel.Worksheet newWorksheet;
             newWorksheet = (Excel.Worksheet)this.excApp.Worksheets.Add();
@@ -267,11 +267,11 @@ namespace AnalysisCDWafer
                         Char delimetr = ':';
                         string[] substring = line.Split(delimetr);
                         this._meansArray.Add(Convert.ToDouble(substring[2]));
-
+                        Console.WriteLine(Convert.ToDouble(substring[2]));
                     }
 
                 }
-            //сбор всех радиусов
+            //сбор всех диаметров
             else
                 while ((line = _streamReader.ReadLine()) != null)
                 {
